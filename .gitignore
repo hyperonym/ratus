@@ -1,0 +1,23 @@
+# Binaries for programs and plugins
+bin/
+release/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Editor stuffs
+.vscode/
+
+# macOS
+.DS_Store
+
+# Temporary files
+temp/
