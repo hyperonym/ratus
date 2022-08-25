@@ -80,3 +80,13 @@ test:
 .PHONY: test-short
 test-short:
 	@go test -short -v ./...
+
+.PHONY: spec
+spec:
+	@swag init --dir internal/controller --generalInfo controller.go -o docs --parseDependency --parseInternal --outputTypes json,yaml
+	@curl -X POST "https://converter.swagger.io/api/convert" -H "accept: application/yaml" -H "Content-Type: application/json" -d "@docs/swagger.json" -o docs/openapi.yaml
+	@curl -X POST "https://converter.swagger.io/api/convert" -H "accept: application/json" -H "Content-Type: application/json" -d "@docs/swagger.json" | python3 -m json.tool > docs/openapi.json
+
+.PHONY: spec-serve
+spec-serve:
+	@python3 -m http.server --directory docs/ 8080
