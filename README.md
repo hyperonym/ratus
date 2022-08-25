@@ -2,7 +2,7 @@
 
 [![Go](https://github.com/hyperonym/ratus/actions/workflows/go.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/go.yml)
 [![Swagger Validator](https://img.shields.io/swagger/valid/3.0?specUrl=https%3A%2F%2Fraw.githubusercontent.com%2Fhyperonym%2Fratus%2Fmaster%2Fdocs%2Fswagger.json)](https://hyperonym.github.io/ratus/)
-![Status](https://img.shields.io/badge/status-alpha-yellow)
+[![Status](https://img.shields.io/badge/status-alpha-yellow)](https://github.com/hyperonym/ratus)
 
 Ratus is a RESTful asynchronous task queue service. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use HTTP API.
 
