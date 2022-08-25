@@ -1,0 +1,35 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Ratus API Specification",
+        "title": "Ratus",
+        "contact": {
+            "name": "GitHub",
+            "url": "https://github.com/hyperonym/ratus"
+        },
+        "license": {
+            "name": "Mozilla Public License Version 2.0",
+            "url": "https://www.mozilla.org/en-US/MPL/2.0/"
+        },
+        "version": "v1"
+    },
+    "basePath": "/v1",
+    "paths": {},
+    "tags": [
+        {
+            "name": "topics"
+        },
+        {
+            "name": "tasks"
+        },
+        {
+            "name": "promises"
+        },
+        {
+            "name": "health"
+        },
+        {
+            "name": "metrics"
+        }
+    ]
+}
