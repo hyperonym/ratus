@@ -1,0 +1,40 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "Ratus",
+        "description": "Ratus API Specification",
+        "contact": {
+            "name": "GitHub",
+            "url": "https://github.com/hyperonym/ratus"
+        },
+        "license": {
+            "name": "Mozilla Public License Version 2.0",
+            "url": "https://www.mozilla.org/en-US/MPL/2.0/"
+        },
+        "version": "v1"
+    },
+    "servers": [
+        {
+            "url": "/v1"
+        }
+    ],
+    "tags": [
+        {
+            "name": "topics"
+        },
+        {
+            "name": "tasks"
+        },
+        {
+            "name": "promises"
+        },
+        {
+            "name": "health"
+        },
+        {
+            "name": "metrics"
+        }
+    ],
+    "paths": {},
+    "components": {}
+}

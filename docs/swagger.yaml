@@ -1,0 +1,19 @@
+basePath: /v1
+info:
+  contact:
+    name: GitHub
+    url: https://github.com/hyperonym/ratus
+  description: Ratus API Specification
+  license:
+    name: Mozilla Public License Version 2.0
+    url: https://www.mozilla.org/en-US/MPL/2.0/
+  title: Ratus
+  version: v1
+paths: {}
+swagger: "2.0"
+tags:
+- name: topics
+- name: tasks
+- name: promises
+- name: health
+- name: metrics
