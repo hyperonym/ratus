@@ -19,7 +19,7 @@ jobs:
         with:
           go-version: ^1.19
       - name: Set up MongoDB
-        uses: supercharge/mongodb-github-action@1.7.0
+        uses: supercharge/mongodb-github-action@1.8.0
         with:
           mongodb-version: '4.4'
       - name: Checkout repository
