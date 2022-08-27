@@ -2,30 +2,52 @@
 package docs
 
 import (
-	_ "embed"
-	"encoding/json"
+	"embed"
+	"net/http"
+	"path"
 
 	"github.com/gin-gonic/gin"
 )
 
-//go:embed openapi.json
-var openapi []byte
+//go:embed index.html
+var index []byte
 
-//go:embed swagger.json
-var swagger []byte
+//go:embed swagger-ui
+//go:embed swagger.json swagger.yaml
+//go:embed openapi.json openapi.yaml
+var swagger embed.FS
 
-// OpenAPI 3.0 specification.
-var OpenAPI gin.H
+// Swagger implements endpoint mounting for API specifications.
+type Swagger struct{}
 
-// Swagger 2.0 specification.
-var Swagger gin.H
+// Prefixes returns the common path prefixes for endpoints in the group.
+func (s *Swagger) Prefixes() []string {
+	return []string{"/"}
+}
 
-// Parse embedded files.
-func init() {
-	if err := json.Unmarshal(openapi, &OpenAPI); err != nil {
-		panic(err)
-	}
-	if err := json.Unmarshal(swagger, &Swagger); err != nil {
-		panic(err)
-	}
+// Mount initializes group-level middlewares and mounts the endpoints.
+func (s *Swagger) Mount(g *gin.RouterGroup) {
+	fs := http.FS(swagger)
+
+	// Serve Swagger UI files.
+	g.GET("/", func(c *gin.Context) {
+		c.Writer.Write(index)
+	})
+	g.GET("/swagger-ui/*filepath", func(c *gin.Context) {
+		c.FileFromFS(path.Join("/swagger-ui/", c.Param("filepath")), fs)
+	})
+
+	// Serve specification files.
+	g.GET("/swagger.json", func(c *gin.Context) {
+		c.FileFromFS("/swagger.json", fs)
+	})
+	g.GET("/swagger.yaml", func(c *gin.Context) {
+		c.FileFromFS("/swagger.yaml", fs)
+	})
+	g.GET("/openapi.json", func(c *gin.Context) {
+		c.FileFromFS("/openapi.json", fs)
+	})
+	g.GET("/openapi.yaml", func(c *gin.Context) {
+		c.FileFromFS("/openapi.yaml", fs)
+	})
 }
