@@ -55,6 +55,23 @@ const (
 	TaskStateArchived
 )
 
+// Updated contains result of an update operation.
+type Updated struct {
+
+	// Number of resources created by the operation.
+	Created int64 `json:"created"`
+
+	// Number of resources updated by the operation.
+	Updated int64 `json:"updated"`
+}
+
+// Deleted contains result of a delete operation.
+type Deleted struct {
+
+	// Number of resources deleted by the operation.
+	Deleted int64 `json:"deleted"`
+}
+
 // Error contains an error message.
 type Error struct {
 
