@@ -156,6 +156,37 @@ type Promise struct {
 	Timeout string `json:"timeout,omitempty" bson:"-" form:"timeout"`
 }
 
+// Commit contains a set of updates to be applied to a task.
+type Commit struct {
+
+	// If not empty, the commit will be accepted only if the value matches the
+	// corresponding nonce of the target task.
+	Nonce string `json:"nonce,omitempty" bson:"nonce,omitempty"`
+
+	// If not empty, transfer the task to the specified topic.
+	Topic string `json:"topic,omitempty" bson:"topic,omitempty"`
+
+	// If not nil, set the state of the task to the specified value.
+	// If nil, the state of the task will be set to "completed" by default.
+	State *TaskState `json:"state,omitempty" bson:"state,omitempty"`
+
+	// If not nil, set the scheduled time of the task to the specified value.
+	Scheduled *time.Time `json:"scheduled,omitempty" bson:"scheduled,omitempty"`
+
+	// If not nil, use this value to replace the payload of the task.
+	Payload any `json:"payload,omitempty" bson:"payload,omitempty"`
+
+	// A duration relative to the time the commit is accepted, indicating that
+	// the task will be scheduled to execute after this duration. When the
+	// absolute scheduled time is specified, the scheduled time will take
+	// precedence. It is recommended to use relative durations whenever
+	// possible to avoid clock synchronization issues. The value must be a
+	// valid duration string parsable by time.ParseDuration. This field is only
+	// used when creating a commit and will be cleared after converting to an
+	// absolute scheduled time.
+	Defer string `json:"defer,omitempty" bson:"-"`
+}
+
 // Updated contains result of an update operation.
 type Updated struct {
 
