@@ -11,6 +11,15 @@ import (
 	"time"
 )
 
+// DefaultTimeout is the default timeout duration for task execution.
+const DefaultTimeout = "10m"
+
+// DefaultLimit is the default number of resources to return in pagination.
+const DefaultLimit = 10
+
+// NonceLength is the length of the randomly generated nonce strings.
+const NonceLength = 16
+
 var (
 	// ErrBadRequest is returned when the request is malformed.
 	ErrBadRequest = errors.New("bad request")
