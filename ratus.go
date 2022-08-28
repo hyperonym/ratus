@@ -129,6 +129,33 @@ type Task struct {
 	Defer string `json:"defer,omitempty" bson:"-"`
 }
 
+// Promise represents a claim on the ownership of an active task.
+type Promise struct {
+
+	// Unique ID of the promise, which is the same as the target task ID.
+	// A promise with an empty ID is considered an "wildcard promise", and
+	// Ratus will assign an appropriate task based on the status of the queue.
+	// A task can only be owned by a single promise at a given time.
+	ID string `json:"_id,omitempty" bson:"_id" form:"_id"`
+
+	// Identifier of the consumer instance who consumed the task.
+	Consumer string `json:"consumer,omitempty" bson:"consumer,omitempty" form:"consumer"`
+
+	// The deadline for the completion of execution promised by the consumer.
+	// Consumer code needs to commit the task before this deadline, otherwise
+	// the task is determined to have timed out and will be reset to the
+	// "pending" state, allowing other consumers to retry.
+	Deadline *time.Time `json:"deadline,omitempty" bson:"deadline,omitempty" form:"deadline"`
+
+	// Timeout duration for task execution promised by the consumer. When the
+	// absolute deadline time is specified, the deadline will take precedence.
+	// It is recommended to use relative durations whenever possible to avoid
+	// clock synchronization issues. The value must be a valid duration string
+	// parsable by time.ParseDuration. This field is only used when creating a
+	// promise and will be cleared after converting to an absolute deadline.
+	Timeout string `json:"timeout,omitempty" bson:"-" form:"timeout"`
+}
+
 // Updated contains result of an update operation.
 type Updated struct {
 
