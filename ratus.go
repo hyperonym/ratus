@@ -55,6 +55,16 @@ const (
 	TaskStateArchived
 )
 
+// Topic refers to an ordered subset of tasks with the same topic name property.
+type Topic struct {
+
+	// User-defined unique name of the topic.
+	Name string `json:"name" bson:"_id"`
+
+	// The number of tasks that belong to the topic.
+	Count int64 `json:"count,omitempty" bson:"count,omitempty"`
+}
+
 // Updated contains result of an update operation.
 type Updated struct {
 
