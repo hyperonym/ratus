@@ -196,6 +196,21 @@ type Commit struct {
 	Defer string `json:"defer,omitempty" bson:"-"`
 }
 
+// Topics contains a list of topic resources.
+type Topics struct {
+	Data []*Topic `json:"data"`
+}
+
+// Tasks contains a list of task resources.
+type Tasks struct {
+	Data []*Task `json:"data"`
+}
+
+// Promises contains a list of promise resources.
+type Promises struct {
+	Data []*Promise `json:"data"`
+}
+
 // Updated contains result of an update operation.
 type Updated struct {
 
