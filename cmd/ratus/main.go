@@ -6,13 +6,20 @@ import (
 	"runtime/debug"
 
 	"github.com/alexflint/go-arg"
+
+	"github.com/hyperonym/ratus/internal/config"
 )
 
 // version contains the version string set by -ldflags.
 var version string
 
 // args contains the command line arguments.
-type args struct{}
+type args struct {
+	Engine string `arg:"--engine,env:ENGINE" placeholder:"NAME" help:"name of the storage engine to be used" default:"mongodb"`
+	config.ServerConfig
+	config.ChoreConfig
+	config.PaginationConfig
+}
 
 // Version returns a version string based on how the binary was compiled.
 // For binaries compiled with "make", the version set by -ldflags is returned.
