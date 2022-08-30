@@ -26,7 +26,7 @@ func TestSwagger(t *testing.T) {
 		r := reqtest.Record(t, h, req)
 		r.AssertStatusCode(http.StatusOK)
 		r.AssertHeaderContains("Content-Type", "application/json")
-		r.AssertBodyContains("\"swagger\": \"")
+		r.AssertBodyContains(`"swagger":`)
 	})
 
 	t.Run("swagger.yaml", func(t *testing.T) {
@@ -43,7 +43,7 @@ func TestSwagger(t *testing.T) {
 		r := reqtest.Record(t, h, req)
 		r.AssertStatusCode(http.StatusOK)
 		r.AssertHeaderContains("Content-Type", "application/json")
-		r.AssertBodyContains("\"openapi\": \"")
+		r.AssertBodyContains(`"openapi":`)
 	})
 
 	t.Run("openapi.yaml", func(t *testing.T) {
