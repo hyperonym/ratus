@@ -39,6 +39,17 @@ Ratus supports [liveness and readiness probes](https://kubernetes.io/docs/tasks/
 * The `completed` state only indicates that the task has been executed, it does not mean the task was successful.
 * Ratus is a simple and reliable alternative to task queues like [Celery](https://docs.celeryq.dev/). Consider to use [RabbitMQ](https://www.rabbitmq.com/) or [Kafka](https://kafka.apache.org/) if you need high-throughput message passing without task management.
 
+## Frequently Asked Questions
+
+For more details, see [Architectural Decision Records](https://github.com/hyperonym/ratus/blob/master/docs/ARCHITECTURAL_DECISION_RECORDS.md).
+
+### Why HTTP API?
+
+> Asynchronous task queues are typically used for long background tasks, so the overhead of the HTTP API is not significant compared to the time spent by the tasks themselves. On the other hand, the HTTP-based RESTful API can be easily accessed by all languages without using dedicated client libraries.
+
+### How to poll from multiple topics?
+
+> If the number of topics is limited and you don't care about the priority between them, you can choose to create multiple threads/goroutines to listen to them simultaneously. Alternatively, you can create a ***topic of topics*** to get the topic names in turn and then get the next task from the corresponding topic.
 ## Contributing
 
 This project is open-source. If you have any ideas or questions, please feel free to reach out by creating an issue!
