@@ -50,6 +50,7 @@ For more details, see [Architectural Decision Records](https://github.com/hypero
 ### How to poll from multiple topics?
 
 > If the number of topics is limited and you don't care about the priority between them, you can choose to create multiple threads/goroutines to listen to them simultaneously. Alternatively, you can create a ***topic of topics*** to get the topic names in turn and then get the next task from the corresponding topic.
+
 ## Contributing
 
 This project is open-source. If you have any ideas or questions, please feel free to reach out by creating an issue!
