@@ -30,3 +30,7 @@ jobs:
         run: make test
       - name: Build artifacts
         run: make build
+      - name: Run coverage
+        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+      - name: Upload coverage to Codecov
+        run: codecov/codecov-action@v3
