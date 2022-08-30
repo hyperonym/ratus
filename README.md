@@ -32,6 +32,13 @@ Ratus supports [liveness and readiness probes](https://kubernetes.io/docs/tasks/
 * The `/livez` endpoint returns a status code of **200** if the instance is running.
 * The `/readyz` endpoint returns a status code of **200** if the instance is ready to accept traffic.
 
+## Caveats
+
+* 🚨 **Topic names and task IDs must not contain plus signs ('+') due to [gin-gonic/gin#2633](https://github.com/gin-gonic/gin/issues/2633).**
+* It is not recommended to use Ratus as the main storage of tasks. Instead, consider storing the complete task record in a database, and **use a minimal descriptor as the payload for Ratus.**
+* The `completed` state only indicates that the task has been executed, it does not mean the task was successful.
+* Ratus is a simple and reliable alternative to task queues like [Celery](https://docs.celeryq.dev/). Consider to use [RabbitMQ](https://www.rabbitmq.com/) or [Kafka](https://kafka.apache.org/) if you need high-throughput message passing without task management.
+
 ## Contributing
 
 This project is open-source. If you have any ideas or questions, please feel free to reach out by creating an issue!
