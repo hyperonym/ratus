@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"github.com/hyperonym/ratus"
 	"github.com/hyperonym/ratus/internal/config"
 	"github.com/hyperonym/ratus/internal/middleware"
 	"github.com/hyperonym/ratus/internal/reqtest"
@@ -44,6 +45,14 @@ func (g *group) Mount(r *gin.RouterGroup) {
 			"limit":  c.GetInt("limit"),
 			"offset": c.GetInt("offset"),
 		})
+	})
+
+	r.POST("/topics/:topic/tasks/:id", middleware.Task(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, c.MustGet("task"))
+	})
+
+	r.POST("/topics/:topic/tasks", middleware.Tasks(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, c.MustGet("tasks"))
 	})
 }
 
@@ -128,6 +137,133 @@ func TestMiddleware(t *testing.T) {
 				r.AssertStatusCode(http.StatusBadRequest)
 				r.AssertBodyContains("offset must not be negative")
 			})
+		})
+	})
+
+	t.Run("task", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("normal", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", &ratus.Task{})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusOK)
+			r.AssertHeaderContains("Content-Type", "application/json")
+			r.AssertBodyContains(`"_id":"1"`)
+			r.AssertBodyContains(`"topic":"test"`)
+			r.AssertBodyContains(`"state":0`)
+			r.AssertBodyContains(`"produced":"`)
+			r.AssertBodyContains(`"scheduled":`)
+		})
+
+		t.Run("bind", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", gin.H{"_id": 1})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("cannot unmarshal number")
+		})
+
+		t.Run("eof", func(t *testing.T) {
+			t.Parallel()
+			req := httptest.NewRequest(http.MethodPost, "/topics/test/tasks/1", nil)
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("missing request body")
+		})
+
+		t.Run("id", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", &ratus.Task{ID: "2"})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("inconsistent with the path parameter")
+		})
+
+		t.Run("topic", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics//tasks/1", &ratus.Task{})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("topic must not be empty")
+		})
+
+		t.Run("state", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", &ratus.Task{State: 9})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("invalid state")
+		})
+
+		t.Run("defer", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("normal", func(t *testing.T) {
+				t.Parallel()
+				req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", &ratus.Task{Defer: "10m"})
+				r := reqtest.Record(t, h, req)
+				r.AssertStatusCode(http.StatusOK)
+			})
+
+			t.Run("invalid", func(t *testing.T) {
+				t.Parallel()
+				req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks/1", &ratus.Task{Defer: "foo"})
+				r := reqtest.Record(t, h, req)
+				r.AssertStatusCode(http.StatusBadRequest)
+				r.AssertBodyContains("invalid duration")
+			})
+		})
+	})
+
+	t.Run("tasks", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("normal", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks", &ratus.Tasks{
+				Data: []*ratus.Task{{ID: "1"}},
+			})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusOK)
+			r.AssertHeaderContains("Content-Type", "application/json")
+			r.AssertBodyContains(`"_id":"1"`)
+			r.AssertBodyContains(`"topic":"test"`)
+			r.AssertBodyContains(`"data":[`)
+		})
+
+		t.Run("bind", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks", gin.H{"data": 1})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("cannot unmarshal number")
+		})
+
+		t.Run("eof", func(t *testing.T) {
+			t.Parallel()
+			req := httptest.NewRequest(http.MethodPost, "/topics/test/tasks", nil)
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("missing request body")
+		})
+
+		t.Run("empty", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks", &ratus.Tasks{})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusOK)
+			r.AssertBodyContains(`{"data":[]}`)
+		})
+
+		t.Run("id", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/tasks", &ratus.Tasks{
+				Data: []*ratus.Task{{Producer: "foo"}},
+			})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("ID must not be empty")
 		})
 	})
 }
