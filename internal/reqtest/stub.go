@@ -1,6 +1,7 @@
 package reqtest
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,12 @@ func (s *StubGroup) Mount(r *gin.RouterGroup) {
 	r.GET("/version", func(c *gin.Context) {
 		c.Header("Content-Type", "text/plain")
 		c.String(http.StatusOK, "42")
+	})
+	r.POST("/echo", func(c *gin.Context) {
+		if t := c.Request.Header.Get("Content-Type"); t != "" {
+			c.Header("Content-Type", t)
+		}
+		io.Copy(c.Writer, c.Request.Body)
 	})
 }
 

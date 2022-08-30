@@ -3,6 +3,7 @@ package reqtest
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -71,4 +72,26 @@ func Record(t *testing.T, h http.Handler, req *http.Request) *ResponseRecord {
 		Body:       d,
 		test:       t,
 	}
+}
+
+// NewRequestJSON wraps around httptest.NewRequest to return a new incoming
+// server Request containing a JSON encoded request body. NewRequestJSON
+// panics on error for ease of use in testing, where a panic is acceptable.
+func NewRequestJSON(method, target string, body any) *http.Request {
+
+	// Encode the request body in JSON.
+	var b io.Reader
+	if body != nil {
+		d, err := json.Marshal(body)
+		if err != nil {
+			panic(err)
+		}
+		b = bytes.NewBuffer(d)
+	}
+
+	// Create request and set the content type header.
+	req := httptest.NewRequest(method, target, b)
+	req.Header.Set("Content-Type", "application/json")
+
+	return req
 }
