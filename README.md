@@ -9,6 +9,39 @@
 
 Ratus is a RESTful asynchronous task queue service. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use HTTP API.
 
+## Concepts
+
+### Data Model
+
+* **Task** references an idempotent unit of work that should be executed asynchronously.
+* **Topic** refers to an ordered subset of tasks with the same topic name property.
+* **Promise** represents a claim on the ownership of an active task.
+* **Commit** contains a set of updates to be applied to a task.
+
+### Workflow
+
+* **Producer** client pushes **tasks** with their desired date-of-execution (scheduled times) to a **topic**.
+* **Consumer** client makes a **promise** to execute a **task** polled from a **topic** and acknowledges with a **commit** upon completion.
+
+### Topology
+
+* Both **producer** and **consumer** clients can have multiple instances running simultaneously.
+* **Consumer** instances can be added dynamically to increase throughput, and **tasks** will be naturally load balanced among consumers.
+* **Consumer** instances can be removed (or crash) at any time without risking to lose the task being executing: a **task** that has not received a **commit** after the **promised** deadline will be picked up and executed again by other consumers.
+
+### Task States
+
+* **pending** (0): The task is ready to be executed or is waiting to be executed in the future.
+* **active** (1): The task is being processed by a consumer. Active tasks that have timed out will be automatically reset to the `pending` state. Consumer code should handle failure and set the state to `pending` to retry later if necessary.
+* **completed** (2): The task has completed its execution. If the storage engine implementation supports TTL, completed tasks will be automatically deleted after the retention period has expired.
+* **archived** (3): The task is stored as an archive. Archived tasks will never be deleted due to expiration.
+
+### Behavior
+
+* **Task IDs across all topics share the same namespace** ([ADR](https://github.com/hyperonym/ratus/blob/master/docs/ARCHITECTURAL_DECISION_RECORDS.md#task-ids-should-be-unique-across-all-topics)). Topics are simply subsets generated based on the `topic` properties of the tasks, so topics do not need to be created explicitly.
+* Ratus is a task scheduler when consumers can keep up with the task generation speed, or a priority queue when consumers cannot keep up with the task generation speed.
+* Tasks will not be executed until the scheduled time arrives. After the scheduled time, excessive tasks will be executed in the order of the scheduled time.
+
 ## Observability
 
 ### Metrics and Labels
