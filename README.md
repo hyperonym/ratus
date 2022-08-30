@@ -9,6 +9,18 @@
 
 Ratus is a RESTful asynchronous task queue service. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use HTTP API.
 
+The key features of Ratus are:
+
+* Guaranteed at-least-once execution of tasks.
+* Automatic recovery of timed out tasks.
+* Simple language agnostic RESTful API.
+* Time-based task scheduling.
+* Naturally load balanced across consumers.
+* Support dynamic topology changes.
+* Scaling through replication and partitioning.
+* Pluggable storage engine architecture.
+* Prometheus integration for observability.
+
 ## Concepts
 
 ### Data Model
