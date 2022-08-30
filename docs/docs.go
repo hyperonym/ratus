@@ -26,28 +26,28 @@ func (s *Swagger) Prefixes() []string {
 }
 
 // Mount initializes group-level middlewares and mounts the endpoints.
-func (s *Swagger) Mount(g *gin.RouterGroup) {
+func (s *Swagger) Mount(r *gin.RouterGroup) {
 	fs := http.FS(swagger)
 
 	// Serve Swagger UI files.
-	g.GET("/", func(c *gin.Context) {
+	r.GET("/", func(c *gin.Context) {
 		c.Writer.Write(index)
 	})
-	g.GET("/swagger-ui/*filepath", func(c *gin.Context) {
+	r.GET("/swagger-ui/*filepath", func(c *gin.Context) {
 		c.FileFromFS(path.Join("/swagger-ui/", c.Param("filepath")), fs)
 	})
 
 	// Serve specification files.
-	g.GET("/swagger.json", func(c *gin.Context) {
+	r.GET("/swagger.json", func(c *gin.Context) {
 		c.FileFromFS("/swagger.json", fs)
 	})
-	g.GET("/swagger.yaml", func(c *gin.Context) {
+	r.GET("/swagger.yaml", func(c *gin.Context) {
 		c.FileFromFS("/swagger.yaml", fs)
 	})
-	g.GET("/openapi.json", func(c *gin.Context) {
+	r.GET("/openapi.json", func(c *gin.Context) {
 		c.FileFromFS("/openapi.json", fs)
 	})
-	g.GET("/openapi.yaml", func(c *gin.Context) {
+	r.GET("/openapi.yaml", func(c *gin.Context) {
 		c.FileFromFS("/openapi.yaml", fs)
 	})
 }
