@@ -28,6 +28,6 @@ func TestStub(t *testing.T) {
 		r := reqtest.Record(t, h, req)
 		r.AssertStatusCode(http.StatusOK)
 		r.AssertHeaderContains("Content-Type", "application/json")
-		r.AssertBodyContains("{\"foo\":\"bar\"}")
+		r.AssertBodyContains(`{"foo":"bar"}`)
 	})
 }
