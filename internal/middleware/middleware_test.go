@@ -58,7 +58,7 @@ func TestMiddleware(t *testing.T) {
 		r2 := reqtest.Record(t, h, req)
 		r2.AssertStatusCode(http.StatusOK)
 		r2.AssertBodyContains("ratus_request_duration_seconds_bucket")
-		r2.AssertBodyContains("endpoint=\"/prometheus\"")
+		r2.AssertBodyContains(`endpoint="/prometheus"`)
 	})
 
 	t.Run("pagination", func(t *testing.T) {
@@ -72,8 +72,8 @@ func TestMiddleware(t *testing.T) {
 				req := httptest.NewRequest(http.MethodGet, "/pagination/20?offset=5", nil)
 				r := reqtest.Record(t, h, req)
 				r.AssertStatusCode(http.StatusOK)
-				r.AssertBodyContains("\"limit\":10")
-				r.AssertBodyContains("\"offset\":5")
+				r.AssertBodyContains(`"limit":10`)
+				r.AssertBodyContains(`"offset":5`)
 			})
 
 			t.Run("bind", func(t *testing.T) {
@@ -109,8 +109,8 @@ func TestMiddleware(t *testing.T) {
 				req := httptest.NewRequest(http.MethodGet, "/pagination/5", nil)
 				r := reqtest.Record(t, h, req)
 				r.AssertStatusCode(http.StatusOK)
-				r.AssertBodyContains("\"limit\":5")
-				r.AssertBodyContains("\"offset\":0")
+				r.AssertBodyContains(`"limit":5`)
+				r.AssertBodyContains(`"offset":0`)
 			})
 
 			t.Run("limit", func(t *testing.T) {
