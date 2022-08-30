@@ -58,6 +58,10 @@ func (g *group) Mount(r *gin.RouterGroup) {
 	r.POST("/topics/:topic/promises/:id", middleware.Promise(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, c.MustGet("promise"))
 	})
+
+	r.PATCH("/topics/:topic/tasks/:id", middleware.Commit(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, c.MustGet("commit"))
+	})
 }
 
 func TestMiddleware(t *testing.T) {
@@ -296,6 +300,37 @@ func TestMiddleware(t *testing.T) {
 		t.Run("timeout", func(t *testing.T) {
 			t.Parallel()
 			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/promises/1", &ratus.Promise{Timeout: "foo"})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("invalid duration")
+		})
+	})
+
+	t.Run("commit", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("normal", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPatch, "/topics/test/tasks/1", &ratus.Commit{Defer: "10m"})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusOK)
+			r.AssertHeaderContains("Content-Type", "application/json")
+			r.AssertBodyContains(`"state":2`)
+			r.AssertBodyContains(`"scheduled":`)
+		})
+
+		t.Run("state", func(t *testing.T) {
+			t.Parallel()
+			var s ratus.TaskState = 9
+			req := reqtest.NewRequestJSON(http.MethodPatch, "/topics/test/tasks/1", &ratus.Commit{State: &s})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("invalid target state")
+		})
+
+		t.Run("defer", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPatch, "/topics/test/tasks/1", &ratus.Commit{Defer: "foo"})
 			r := reqtest.Record(t, h, req)
 			r.AssertStatusCode(http.StatusBadRequest)
 			r.AssertBodyContains("invalid duration")
