@@ -54,6 +54,10 @@ func (g *group) Mount(r *gin.RouterGroup) {
 	r.POST("/topics/:topic/tasks", middleware.Tasks(), func(c *gin.Context) {
 		c.JSON(http.StatusOK, c.MustGet("tasks"))
 	})
+
+	r.POST("/topics/:topic/promises/:id", middleware.Promise(), func(c *gin.Context) {
+		c.JSON(http.StatusOK, c.MustGet("promise"))
+	})
 }
 
 func TestMiddleware(t *testing.T) {
@@ -264,6 +268,37 @@ func TestMiddleware(t *testing.T) {
 			r := reqtest.Record(t, h, req)
 			r.AssertStatusCode(http.StatusBadRequest)
 			r.AssertBodyContains("ID must not be empty")
+		})
+	})
+
+	t.Run("promise", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("normal", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/promises/1?consumer=foo", &ratus.Promise{})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusOK)
+			r.AssertHeaderContains("Content-Type", "application/json")
+			r.AssertBodyContains(`"_id":"1"`)
+			r.AssertBodyContains(`"consumer":"foo"`)
+			r.AssertBodyContains(`"deadline":`)
+		})
+
+		t.Run("id", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/promises/1", &ratus.Promise{ID: "2"})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("inconsistent with the path parameter")
+		})
+
+		t.Run("timeout", func(t *testing.T) {
+			t.Parallel()
+			req := reqtest.NewRequestJSON(http.MethodPost, "/topics/test/promises/1", &ratus.Promise{Timeout: "foo"})
+			r := reqtest.Record(t, h, req)
+			r.AssertStatusCode(http.StatusBadRequest)
+			r.AssertBodyContains("invalid duration")
 		})
 	})
 }
