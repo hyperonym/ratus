@@ -17,8 +17,8 @@ func (s *StubGroup) Prefixes() []string {
 }
 
 // Mount initializes group-level middlewares and mounts the endpoints.
-func (s *StubGroup) Mount(g *gin.RouterGroup) {
-	g.GET("/version", func(c *gin.Context) {
+func (s *StubGroup) Mount(r *gin.RouterGroup) {
+	r.GET("/version", func(c *gin.Context) {
 		c.Header("Content-Type", "text/plain")
 		c.String(http.StatusOK, "42")
 	})
