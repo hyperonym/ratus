@@ -23,7 +23,7 @@ type Group interface {
 	Prefixes() []string
 
 	// Mount initializes group-level middlewares and mounts the endpoints.
-	Mount(g *gin.RouterGroup)
+	Mount(*gin.RouterGroup)
 }
 
 // New creates a router engine with all the provided endpoint groups mounted.
