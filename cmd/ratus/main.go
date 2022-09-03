@@ -8,10 +8,16 @@ import (
 	"github.com/alexflint/go-arg"
 
 	"github.com/hyperonym/ratus/internal/config"
+	"github.com/hyperonym/ratus/internal/engine/mongodb"
 )
 
 // version contains the version string set by -ldflags.
 var version string
+
+// Create type aliases for embedding engine-specific configurations.
+type (
+	mongodbConfig = mongodb.Config
+)
 
 // args contains the command line arguments.
 type args struct {
@@ -19,6 +25,7 @@ type args struct {
 	config.ServerConfig
 	config.ChoreConfig
 	config.PaginationConfig
+	mongodbConfig
 }
 
 // Version returns a version string based on how the binary was compiled.
