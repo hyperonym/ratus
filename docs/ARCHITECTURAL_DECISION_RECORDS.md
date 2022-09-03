@@ -44,7 +44,7 @@ Task IDs across all topics should share the same namespace, and **a topic is jus
 
 This decision significantly reduces duplicate information and redundant components in the system and saves storage space, allowing efficient and reliable transfer of tasks across topics. But on the other hand, additional checks are required to ensure the uniqueness of the IDs when inserting tasks.
 
-## Generate random nonce strings for "compare-and-swap"
+## Generate random nonce strings
 
 ### Status
 
@@ -61,13 +61,13 @@ On sharded collections, some MongoDB commands have strict requirements for query
 > * When using [`deleteOne`](https://www.mongodb.com/docs/v4.4/reference/method/db.collection.deleteOne/#sharded-collections) against a sharded collection, the query must **include the `_id` field** *or* the shard key.
 > * When using [`replaceOne`](https://www.mongodb.com/docs/v4.4/reference/method/db.collection.replaceOne/#upsert-on-a-sharded-collection) that includes `upsert: true` on a sharded collection, the query must **include the full shard key**.
 
-These requirements make it impossible to use atomic operations in some specific cases. To avoid unintended data changes between two or more consecutive operations, a mechanism is needed to track the state of the data.
+These requirements make it impossible to use atomic operations in some specific cases. To avoid unintended data changes between two or more consecutive operations, a method is required to track the state of the data.
 
-In addition, since Ratus allows multiple consumers to run simultaneously, a mechanism is needed to invalidate duplicated commits.
+In addition, since Ratus allows multiple consumers to run simultaneously, a method is required to invalidate duplicated commits.
 
 ### Decision
 
-Taking a cue from [compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap) (CAS), let each operation that may cause a change in the data to generate a random nonce string that is stored along with the data. Subsequent operations can **compare nonce strings to ensure data consistency**.
+In order to implement [optimistic concurrency control](https://en.wikipedia.org/wiki/Optimistic_concurrency_control) (OCC), let each operation that may cause a change in the data to generate a random nonce string that is stored along with the data. Subsequent operations can **verify nonce strings to ensure data consistency**.
 
 ### Consequences
 
