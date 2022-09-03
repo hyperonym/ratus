@@ -20,6 +20,9 @@ const DefaultLimit = 10
 // NonceLength is the length of the randomly generated nonce strings.
 const NonceLength = 16
 
+// StatusClientClosedRequest is the code for client closed request errors.
+const StatusClientClosedRequest = 499
+
 var (
 	// ErrBadRequest is returned when the request is malformed.
 	ErrBadRequest = errors.New("bad request")
@@ -249,7 +252,7 @@ func (e *Error) Err() error {
 	// Determine the sentinel error to wrap around based on the error code.
 	var err error
 	switch e.Error.Code {
-	case 499:
+	case StatusClientClosedRequest:
 		err = ErrClientClosedRequest
 	case http.StatusBadRequest:
 		err = ErrBadRequest
@@ -281,11 +284,11 @@ func NewError(err error) *Error {
 	var s int
 	switch {
 	case errors.Is(err, context.Canceled):
-		s = 499
+		s = StatusClientClosedRequest
 	case errors.Is(err, io.ErrUnexpectedEOF):
-		s = 499
+		s = StatusClientClosedRequest
 	case errors.Is(err, ErrClientClosedRequest):
-		s = 499
+		s = StatusClientClosedRequest
 	case errors.Is(err, ErrBadRequest):
 		s = http.StatusBadRequest
 	case errors.Is(err, ErrNotFound):

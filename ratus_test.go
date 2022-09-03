@@ -24,10 +24,10 @@ func TestError(t *testing.T) {
 
 	t.Run("closed", func(t *testing.T) {
 		t.Parallel()
-		if e := ratus.NewError(context.Canceled); e.Error.Code != 499 {
+		if e := ratus.NewError(context.Canceled); e.Error.Code != ratus.StatusClientClosedRequest {
 			t.Errorf("incorrect error code %d for %q", e.Error.Code, context.Canceled)
 		}
-		if e := ratus.NewError(io.ErrUnexpectedEOF); e.Error.Code != 499 {
+		if e := ratus.NewError(io.ErrUnexpectedEOF); e.Error.Code != ratus.StatusClientClosedRequest {
 			t.Errorf("incorrect error code %d for %q", e.Error.Code, io.ErrUnexpectedEOF)
 		}
 	})
