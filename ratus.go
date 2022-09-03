@@ -93,10 +93,10 @@ type Task struct {
 	// either "pending", "active", "completed" or "archived".
 	State TaskState `json:"state" bson:"state"`
 
-	// The nonce field stores a random string to ensure that consumers can only
-	// commit to tasks that have not changed since the promise was made.
-	// This mechanism implements a generalized form of compare-and-swap (CAS):
-	// https://en.wikipedia.org/wiki/Compare-and-swap
+	// The nonce field stores a random string for implementing an optimistic
+	// concurrency control (OCC) layer outside of the storage engine. Ratus
+	// ensures consumers can only commit to tasks that have not changed since
+	// the promise was made by verifying the nonce field.
 	Nonce string `json:"nonce" bson:"nonce"`
 
 	// Identifier of the producer instance who produced the task.
