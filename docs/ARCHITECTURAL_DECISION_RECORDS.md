@@ -44,7 +44,7 @@ Task IDs across all topics should share the same namespace, and **a topic is jus
 
 This decision significantly reduces duplicate information and redundant components in the system and saves storage space, allowing efficient and reliable transfer of tasks across topics. But on the other hand, additional checks are required to ensure the uniqueness of the IDs when inserting tasks.
 
-## Generate random nonce strings
+## Support OCC via the nonce field
 
 ### Status
 
