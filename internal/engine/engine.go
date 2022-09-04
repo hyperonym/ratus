@@ -12,7 +12,7 @@ type Engine interface {
 
 	// Open or connect to the storage engine.
 	Open(ctx context.Context) error
-	// Close or disconnects from the storage engine.
+	// Close or disconnect from the storage engine.
 	Close(ctx context.Context) error
 	// Destroy clears all data and closes the storage engine.
 	Destroy(ctx context.Context) error
