@@ -19,7 +19,7 @@ type Config struct {
 
 	DisableIndexCreation bool `arg:"--mongodb-disable-index-creation,env:MONGODB_DISABLE_INDEX_CREATION" help:"disable automatic index creation on startup"`
 	DisableAutoFallback  bool `arg:"--mongodb-disable-auto-fallback,env:MONGODB_DISABLE_AUTO_FALLBACK" help:"disable transparent fallbacks for unsupported operations"`
-	DisableAtomicPoll    bool `arg:"--mongodb-disable-atomic-poll,env:MONGODB_DISABLE_ATOMIC_POLL" help:"disable atomic polling and fallback to optimistic concurrency control"`
+	DisableAtomicPoll    bool `arg:"--mongodb-disable-atomic-poll,env:MONGODB_DISABLE_ATOMIC_POLL" help:"disable atomic polling and fallback to optimistic locking"`
 }
 
 // Engine implements the storage engine interface for MongoDB.
