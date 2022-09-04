@@ -61,9 +61,9 @@ On sharded collections, some MongoDB commands have strict requirements for query
 > * When using [`deleteOne`](https://www.mongodb.com/docs/v4.4/reference/method/db.collection.deleteOne/#sharded-collections) against a sharded collection, the query must **include the `_id` field** *or* the shard key.
 > * When using [`replaceOne`](https://www.mongodb.com/docs/v4.4/reference/method/db.collection.replaceOne/#upsert-on-a-sharded-collection) that includes `upsert: true` on a sharded collection, the query must **include the full shard key**.
 
-These requirements make it impossible to use atomic operations in some specific cases. To avoid unintended data changes between two or more consecutive operations, a method is required to track the state of the data.
+These requirements make it impossible to use atomic operations in some specific cases. To avoid unintended data changes between two or more consecutive operations, a strategy is required to track the state of the data.
 
-In addition, since Ratus allows multiple consumers to run simultaneously, a method is required to invalidate duplicated commits.
+In addition, since Ratus allows multiple consumers to run simultaneously, a strategy is required to invalidate duplicated commits.
 
 ### Decision
 
