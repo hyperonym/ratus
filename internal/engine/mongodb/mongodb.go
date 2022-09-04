@@ -2,11 +2,34 @@
 package mongodb
 
 import (
+	"context"
 	"sync/atomic"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/hyperonym/ratus"
+)
+
+// Name constants for index creation and selection.
+const (
+	hintID                    = "_id_"
+	hintTopic                 = "topic_hashed"
+	hintPendingTopicScheduled = "topic_1_scheduled_1"
+	hintActiveDeadline        = "deadline_1"
+	hintActiveTopic           = "topic_1"
+	hintCompletedConsumed     = "consumed_1"
+)
+
+// Partial filter expressions for index creation.
+var (
+	filterStatePending   = bson.D{{Key: "state", Value: ratus.TaskStatePending}}
+	filterStateActive    = bson.D{{Key: "state", Value: ratus.TaskStateActive}}
+	filterStateCompleted = bson.D{{Key: "state", Value: ratus.TaskStateCompleted}}
 )
 
 // Config contains configurations for the MongoDB storage engine.
@@ -89,4 +112,110 @@ func (g *Engine) Fallback(v int32) *Engine {
 	g.fallbackInsertPromise.Store(v)
 	g.fallbackUpsertPromise.Store(v)
 	return g
+}
+
+// Open or connect to the storage engine.
+func (g *Engine) Open(ctx context.Context) error {
+
+	// Connect to the deployment but do not use Ping to verify the connection
+	// as it reduces application resilience because applications starting up
+	// will error if the server is temporarily unavailable or is failing over.
+	if err := g.client.Connect(ctx); err != nil {
+		return err
+	}
+
+	// Create indexes on the collection if required.
+	if !g.config.DisableIndexCreation {
+		if err := g.createIndexes(ctx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Close or disconnect from the storage engine.
+func (g *Engine) Close(ctx context.Context) error {
+	return g.client.Disconnect(ctx)
+}
+
+// Destroy clears all data and closes the storage engine.
+func (g *Engine) Destroy(ctx context.Context) error {
+	if err := g.collection.Drop(ctx); err != nil {
+		return err
+	}
+	return g.Close(ctx)
+}
+
+// Ready probes the storage engine and returns an error if it is not ready.
+func (g *Engine) Ready(ctx context.Context) error {
+	if err := g.client.Ping(ctx, readpref.Primary()); err != nil {
+		return ratus.ErrServiceUnavailable
+	}
+	return nil
+}
+
+// createIndexes creates all indexes required for queue operations.
+func (g *Engine) createIndexes(ctx context.Context) error {
+	v := g.collection.Indexes()
+	e, ctx := errgroup.WithContext(ctx)
+
+	// Create indexes that do not require TTL settings.
+	e.Go(func() error {
+		_, err := v.CreateMany(ctx, []mongo.IndexModel{
+			{
+				Keys:    bson.D{{Key: "topic", Value: "hashed"}},
+				Options: options.Index().SetName(hintTopic),
+			},
+			{
+				Keys:    bson.D{{Key: "topic", Value: 1}, {Key: "scheduled", Value: 1}},
+				Options: options.Index().SetName(hintPendingTopicScheduled).SetPartialFilterExpression(filterStatePending),
+			},
+			{
+				Keys:    bson.D{{Key: "deadline", Value: 1}},
+				Options: options.Index().SetName(hintActiveDeadline).SetPartialFilterExpression(filterStateActive),
+			},
+			{
+				Keys:    bson.D{{Key: "topic", Value: 1}},
+				Options: options.Index().SetName(hintActiveTopic).SetPartialFilterExpression(filterStateActive),
+			},
+		})
+		return err
+	})
+
+	// Create TTL index to automatically delete completed tasks that have
+	// exceeded their retention period.
+	e.Go(func() error {
+		k := bson.D{{Key: "consumed", Value: 1}}
+		s := int32(g.config.RetentionPeriod.Seconds())
+
+		// Attempt to create a new TTL index. This operation will fail if the
+		// specified TTL value does not match the value in the existing index.
+		_, err := v.CreateOne(ctx, mongo.IndexModel{
+			Keys:    k,
+			Options: options.Index().SetName(hintCompletedConsumed).SetPartialFilterExpression(filterStateCompleted).SetExpireAfterSeconds(s),
+		})
+		if err == nil {
+			return nil
+		}
+		if c, ok := err.(mongo.CommandError); !ok || c.Name != "IndexOptionsConflict" {
+			return err
+		}
+
+		// Use the collMod command in conjunction with the index collection
+		// flag to change the value of expireAfterSeconds of an existing index.
+		if err := g.database.RunCommand(ctx, bson.D{
+			{Key: "collMod", Value: g.collection.Name()},
+			{Key: "index", Value: bson.D{
+				{Key: "keyPattern", Value: k},
+				{Key: "expireAfterSeconds", Value: s},
+			}},
+		}).Err(); err != nil && err != mongo.ErrNoDocuments {
+			return err
+		}
+
+		return nil
+	})
+
+	return e.Wait()
 }
