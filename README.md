@@ -54,6 +54,52 @@ The key features of Ratus are:
 * Ratus is a task scheduler when consumers can keep up with the task generation speed, or a priority queue when consumers cannot keep up with the task generation speed.
 * Tasks will not be executed until the scheduled time arrives. After the scheduled time, excessive tasks will be executed in the order of the scheduled time.
 
+## Engines
+
+Ratus provides a consistent API for various storage engine implementations, allowing users to choose a specific engine based on their needs without having to modify client-side code.
+
+| Name | Persistent | Replication | Partitioning | TTL
+| --- | :---: | :---: | :---: | :---: |
+| `mongodb` | ● | ● | ● | ● |
+
+### MongoDB
+
+Ratus works best with **MongoDB version ~4.4**. MongoDB 5.0+ is also supported but requires additional considerations, see [Implementation Details](https://github.com/hyperonym/ratus/blob/master/README.md#implementation-details) to learn more.
+
+#### Replication
+
+When using the MongoDB storage engine, the Ratus instance itself is stateless. For high availability, **start multiple instances of Ratus and connect them to the same MongoDB replica set**.
+
+All Ratus instances should run behind load balancers configured with health checks. **Producer and consumer clients should connect to the load balancer**, not directly to the instances.
+
+#### Partitioning
+
+Horizontal scaling could be achieved through sharding the task collection. However, with the help of the TTL mechanism, **partitioning is not necessary in most cases**. The best performance and the strongest atomicity can only be obtained without sharding.
+
+If the amount of data exceeds the capacity of a single node or replica set, choose from the following sharding options:
+
+* If there is a large number of topics, **use a hashed index on the `topic` field as the shard key**, this will also enable the best polling performance on a sharded cluster.
+* If there is a huge amount of tasks in a few topics, **use a hashed index on the `_id` field as the shard key**, this will also result in a more balanced data distribution.
+
+#### Implementation Details
+
+* When using the MongoDB storage engine, **tasks across all topics are stored in the same collection**.
+* Task is the only concrete data model in the MongoDB storage engine, while topics and promises are just conceptual entities for enforcing the RESTful design principles.
+* Since the resolution of the scheduled time in MongoDB is in millisecond level and is affected by the instance's own clock, **the order in which consumers receive tasks is not strictly guaranteed**.
+* For sharded collections using the `topic` field as the shard key, it is not recommended to perform batch replacements of tasks as the operation relies on slower [ordered bulk writes](https://www.mongodb.com/docs/v4.4/core/bulk-write-operations/#ordered-vs-unordered-operations). This problem can be circumvented by using batch inserts together with the TTL mechanism.
+* TTL cannot be disabled for `completed` tasks, in order to preserve a task forever, set it to the `archived` state.
+* By default, polling is implemented through `findAndModify`. In the event of a conflict, MongoDB's native [optimistic concurrency control](https://www.mongodb.com/docs/v4.4/faq/concurrency/#how-granular-are-locks-in-mongodb-) (OCC) will transparently retry the operation. But in MongoDB 5.0 and above, the retry will report a `WriteConflict` error in the database server's log (although the operation is still successful from the client's perspective). You can choose to ignore this error, or circumvent the problem by **setting `MONGODB_DISABLE_ATOMIC_POLL=true` when using MongoDB 5.0+**. This option will make Ratus to not use `findAndModify` for polling and instead rely on the application-level OCC layer to ensure atomicity.
+
+#### Index Models
+
+| Key Patterns | Partial Filter Expression | TTL |
+| --- | --- | --- |
+| `{"topic": "hashed"}` | - | - |
+| `{"topic": 1, "scheduled": 1}` | `{"state": 0}` | - |
+| `{"deadline": 1}` | `{"state": 1}` | - |
+| `{"topic": 1}` | `{"state": 1}` | - |
+| `{"consumed": 1}` | `{"state": 2}` | `MONGODB_RETENTION_PERIOD` |
+
 ## Observability
 
 ### Metrics and Labels
