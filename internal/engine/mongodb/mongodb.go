@@ -288,6 +288,25 @@ func updateOpsConsume(p *ratus.Promise, t time.Time) bson.D {
 	}
 }
 
+// updateOpsCommit returns a document containing update operators to apply a
+// commit to a task.
+func updateOpsCommit(m *ratus.Commit) bson.D {
+	var s bson.D
+	if m.Topic != "" {
+		s = append(s, bson.E{Key: "topic", Value: m.Topic})
+	}
+	if m.State != nil {
+		s = append(s, bson.E{Key: "state", Value: m.State})
+	}
+	if m.Scheduled != nil {
+		s = append(s, bson.E{Key: "scheduled", Value: m.Scheduled})
+	}
+	if m.Payload != nil {
+		s = append(s, bson.E{Key: "payload", Value: m.Payload})
+	}
+	return bson.D{{Key: "$set", Value: s}}
+}
+
 // A generic function that decides whether to execute the preferred or fallback
 // branch based on the given atomic flag and the returned error code. If the
 // preferred branch failed with one of the pre-defined errors, the flag will be

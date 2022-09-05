@@ -79,9 +79,9 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 		return nil, err
 	}
 
-	// Add the unique ID and nonce of the candidate task to the filter criteria
-	// to implement optimistic concurrency control. This operation is expected
-	// to work on sharded collections using various sharding strategies.
+	// Add all known fields to the filter criteria to perform findAndModify.
+	// This operation is expected to work on sharded collections using various
+	// sharding strategies.
 	var v ratus.Task
 	f = append(f, bson.E{Key: "_id", Value: c.ID})
 	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
@@ -89,10 +89,93 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
 
-		// The only reason that could lead to no match is that another consumer
-		// has obtained the task. Retry immediately to secure the next task!
+		// The only reason that could lead to no match is that the task has
+		// been obtained by another consumer. Retry immediately to secure the
+		// next task!
 		if err == mongo.ErrNoDocuments {
 			return g.pollOptimistic(ctx, topic, p)
+		}
+		return nil, err
+	}
+
+	return &v, nil
+}
+
+// Commit applies a set of updates to a task and returns the updated task.
+func (g *Engine) Commit(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error) {
+	return branch(func() (*ratus.Task, error) {
+		return g.commitAtomic(ctx, id, m)
+	}, func() (*ratus.Task, error) {
+		return g.commitOptimistic(ctx, id, m)
+	}, g.fallbackCommit)
+}
+
+// commitAtomic is the preferred implementation of Commit.
+func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error) {
+
+	// Verify the nonce if provided to invalidate unintended commits.
+	var v ratus.Task
+	f := bson.D{{Key: "_id", Value: id}}
+	if m.Nonce != "" {
+		f = append(f, bson.E{Key: "nonce", Value: m.Nonce})
+	}
+	u := updateOpsCommit(m)
+	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+
+	// Use an atomic findAndModify command to apply the updates and return the
+	// update task. This operation is expected to work only on unsharded
+	// collections and sharded collections using the ID field as the shard key.
+	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
+
+		// Check if the failure is due to a mismatch of nonce or the target
+		// task does not exist.
+		if err == mongo.ErrNoDocuments {
+			if m.Nonce != "" && g.exists(ctx, bson.D{{Key: "_id", Value: id}}, hintID) {
+				err = ratus.ErrConflict
+			} else {
+				err = ratus.ErrNotFound
+			}
+		}
+		return nil, err
+	}
+
+	return &v, nil
+}
+
+// commitOptimistic is the fallback implementation of Commit.
+func (g *Engine) commitOptimistic(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error) {
+
+	// Get current information of the target task.
+	f := bson.D{{Key: "_id", Value: id}}
+	c, err := g.peek(ctx, f, nil, hintID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			err = ratus.ErrNotFound
+		}
+		return nil, err
+	}
+
+	// Verify the nonce if provided to invalidate unintended commits.
+	if m.Nonce != "" && m.Nonce != c.Nonce {
+		return nil, ratus.ErrConflict
+	}
+
+	// Add all known fields to the filter criteria to perform findAndModify.
+	// This operation is expected to work on sharded collections using various
+	// sharding strategies.
+	var v ratus.Task
+	f = append(f, bson.E{Key: "topic", Value: c.Topic})
+	f = append(f, bson.E{Key: "state", Value: c.State})
+	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
+	u := updateOpsCommit(m)
+	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
+
+		// The only reason that could lead to no match is that the task has
+		// been updated by another consumer. Therefore it is considered to be
+		// a conflict.
+		if err == mongo.ErrNoDocuments {
+			err = ratus.ErrConflict
 		}
 		return nil, err
 	}
