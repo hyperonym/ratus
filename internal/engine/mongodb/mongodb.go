@@ -32,6 +32,12 @@ var (
 	filterStateCompleted = bson.D{{Key: "state", Value: ratus.TaskStateCompleted}}
 )
 
+// List of MongoDB server error codes that should trigger a fallback.
+var fallbackErrorCodes = []int{
+	61,    // Query for sharded findAndModify must contain the shard key.
+	31025, // Shard key update is not allowed without specifying the full shard key in the query.
+}
+
 // Config contains configurations for the MongoDB storage engine.
 type Config struct {
 	URI        string `arg:"--mongodb-uri,env:MONGODB_URI" placeholder:"URI" help:"connection URI of the MongoDB deployment to connect to" default:"mongodb://127.0.0.1:27017"`
@@ -230,4 +236,41 @@ func updateOpsRecover() bson.D {
 			{Key: "nonce", Value: ""},
 		}},
 	}
+}
+
+// A generic function that decides whether to execute the preferred or fallback
+// branch based on the given atomic flag and the returned error code. If the
+// preferred branch failed with one of the pre-defined errors, the flag will be
+// updated to route all subsequent calls to use the fallback branch directly.
+func branch[T *ratus.Task | *ratus.Updated | *ratus.Deleted](preferred, fallback func() (T, error), flag *atomic.Int32) (T, error) {
+
+	// Use the fallback branch if the value of the flag is greater than zero.
+	if flag.Load() > 0 {
+		return fallback()
+	}
+
+	// Attempt to use the preferred branch and return directly if there is no
+	// error or if fallback is disabled. Setting the flag value to a negative
+	// number will disable auto fallback.
+	v, err := preferred()
+	if err == nil || flag.Load() < 0 {
+		return v, err
+	}
+
+	// Only MongoDB server errors can trigger a fallback.
+	e, ok := err.(mongo.ServerError)
+	if !ok {
+		return nil, err
+	}
+
+	// Update the flag and use the fallback branch if the error has one of the
+	// pre-defined error codes.
+	for _, c := range fallbackErrorCodes {
+		if e.HasErrorCode(c) {
+			flag.Store(1)
+			return fallback()
+		}
+	}
+
+	return nil, err
 }
