@@ -66,6 +66,8 @@ Ratus provides a consistent API for various storage engine implementations, allo
 
 Ratus works best with **MongoDB version ~4.4**. MongoDB 5.0+ is also supported but requires additional considerations, see [Implementation Details](https://github.com/hyperonym/ratus/blob/master/README.md#implementation-details) to learn more.
 
+> 💭 **TL;DR** set `MONGODB_DISABLE_ATOMIC_POLL=true` when using Ratus with MongoDB 5.0+.
+
 #### Replication
 
 When using the MongoDB storage engine, the Ratus instance itself is stateless. For high availability, **start multiple instances of Ratus and connect them to the same MongoDB replica set**.
