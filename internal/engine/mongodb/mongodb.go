@@ -219,3 +219,15 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 
 	return e.Wait()
 }
+
+// updateOpsRecover returns a document containing update operators to set the
+// state of the tasks back to "pending" and clear the nonce field to invalidate
+// subsequent commits.
+func updateOpsRecover() bson.D {
+	return bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "state", Value: ratus.TaskStatePending},
+			{Key: "nonce", Value: ""},
+		}},
+	}
+}
