@@ -13,6 +13,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/hyperonym/ratus"
+	"github.com/hyperonym/ratus/internal/nonce"
 )
 
 // Name constants for index creation and selection.
@@ -226,6 +227,41 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 	return e.Wait()
 }
 
+// peek returns the unique ID, topic, current state, and nonce of the first
+// task matching the filter criteria.
+func (g *Engine) peek(ctx context.Context, filter, sort any, hint string) (*ratus.Task, error) {
+	var v ratus.Task
+	j := bson.D{
+		{Key: "_id", Value: 1},
+		{Key: "topic", Value: 1},
+		{Key: "state", Value: 1},
+		{Key: "nonce", Value: 1},
+	}
+	o := options.FindOne().SetAllowPartialResults(true).SetSort(sort).SetProjection(j).SetHint(hint)
+	if err := g.collection.FindOne(ctx, filter, o).Decode(&v); err != nil {
+		return nil, err
+	}
+	return &v, nil
+}
+
+// exists returns whether a document that matches the filter criteria exists.
+func (g *Engine) exists(ctx context.Context, filter any, hint string) bool {
+	_, err := g.peek(ctx, filter, nil, hint)
+	return err == nil
+}
+
+// queryOpsPoll returns a document containing query operators to peek into the
+// topic to find the next available task based on the scheduled time.
+func queryOpsPoll(topic string, t time.Time) bson.D {
+	return bson.D{
+		{Key: "state", Value: ratus.TaskStatePending},
+		{Key: "topic", Value: topic},
+		{Key: "scheduled", Value: bson.D{
+			{Key: "$lte", Value: t},
+		}},
+	}
+}
+
 // updateOpsRecover returns a document containing update operators to set the
 // state of the tasks back to "pending" and clear the nonce field to invalidate
 // subsequent commits.
@@ -234,6 +270,20 @@ func updateOpsRecover() bson.D {
 		{Key: "$set", Value: bson.D{
 			{Key: "state", Value: ratus.TaskStatePending},
 			{Key: "nonce", Value: ""},
+		}},
+	}
+}
+
+// updateOpsConsume returns a document containing update operators to set the
+// tasks to the "active" state and populate fields with data from the promise.
+func updateOpsConsume(p *ratus.Promise, t time.Time) bson.D {
+	return bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "state", Value: ratus.TaskStateActive},
+			{Key: "nonce", Value: nonce.Generate(ratus.NonceLength)},
+			{Key: "consumer", Value: p.Consumer},
+			{Key: "consumed", Value: t},
+			{Key: "deadline", Value: p.Deadline},
 		}},
 	}
 }
