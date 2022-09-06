@@ -19,7 +19,7 @@ func (g *Engine) ListTopics(ctx context.Context, limit, offset int) ([]*ratus.To
 	// https://www.mongodb.com/docs/v4.4/core/aggregation-pipeline-optimization/#indexes
 	// https://www.mongodb.com/docs/v4.4/reference/operator/aggregation/group/#optimization-to-return-the-first-document-of-each-group
 	p := mongo.Pipeline{
-		bson.D{{Key: "$group", Value: bson.D{{Key: "_id", Value: "$topic"}}}},
+		bson.D{{Key: "$group", Value: bson.D{{Key: keyID, Value: "$" + keyTopic}}}},
 		bson.D{{Key: "$skip", Value: offset}},
 		bson.D{{Key: "$limit", Value: limit}},
 	}
@@ -58,7 +58,7 @@ func (g *Engine) DeleteTopics(ctx context.Context) (*ratus.Deleted, error) {
 func (g *Engine) GetTopic(ctx context.Context, topic string) (*ratus.Topic, error) {
 
 	// Get the number of tasks under the topic.
-	f := bson.D{{Key: "topic", Value: topic}}
+	f := bson.D{{Key: keyTopic, Value: topic}}
 	o := options.Count().SetHint(hintTopic)
 	n, err := g.collection.CountDocuments(ctx, f, o)
 
@@ -81,7 +81,7 @@ func (g *Engine) GetTopic(ctx context.Context, topic string) (*ratus.Topic, erro
 
 // DeleteTopic deletes a topic and its tasks.
 func (g *Engine) DeleteTopic(ctx context.Context, topic string) (*ratus.Deleted, error) {
-	f := bson.D{{Key: "topic", Value: topic}}
+	f := bson.D{{Key: keyTopic, Value: topic}}
 	o := options.Delete().SetHint(hintTopic)
 	r, err := g.collection.DeleteMany(ctx, f, o)
 	if err != nil {

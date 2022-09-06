@@ -12,7 +12,7 @@ import (
 
 // ListTasks lists all tasks in a topic.
 func (g *Engine) ListTasks(ctx context.Context, topic string, limit, offset int) ([]*ratus.Task, error) {
-	f := bson.D{{Key: "topic", Value: topic}}
+	f := bson.D{{Key: keyTopic, Value: topic}}
 	o := options.Find().SetLimit(int64(limit)).SetSkip(int64(offset)).SetHint(hintTopic)
 	r, err := g.collection.Find(ctx, f, o)
 	if err != nil {
@@ -67,7 +67,7 @@ func (g *Engine) upsertTasksReplace(ctx context.Context, ts []*ratus.Task) (*rat
 	w := make([]mongo.WriteModel, len(ts))
 	for i, t := range ts {
 		m := mongo.NewReplaceOneModel()
-		m = m.SetFilter(bson.D{{Key: "_id", Value: t.ID}})
+		m = m.SetFilter(bson.D{{Key: keyID, Value: t.ID}})
 		m = m.SetReplacement(t)
 		m = m.SetUpsert(true)
 		m = m.SetHint(hintID)
@@ -95,7 +95,7 @@ func (g *Engine) upsertTasksDeleteAndInsert(ctx context.Context, ts []*ratus.Tas
 	w := make([]mongo.WriteModel, len(ts))
 	for i, t := range ts {
 		m := mongo.NewDeleteOneModel()
-		m = m.SetFilter(bson.D{{Key: "_id", Value: t.ID}})
+		m = m.SetFilter(bson.D{{Key: keyID, Value: t.ID}})
 		m = m.SetHint(hintID)
 		w[i] = m
 	}
@@ -122,7 +122,7 @@ func (g *Engine) upsertTasksDeleteAndInsert(ctx context.Context, ts []*ratus.Tas
 
 // DeleteTasks deletes all tasks in a topic.
 func (g *Engine) DeleteTasks(ctx context.Context, topic string) (*ratus.Deleted, error) {
-	f := bson.D{{Key: "topic", Value: topic}}
+	f := bson.D{{Key: keyTopic, Value: topic}}
 	o := options.Delete().SetHint(hintTopic)
 	r, err := g.collection.DeleteMany(ctx, f, o)
 	if err != nil {
@@ -136,7 +136,7 @@ func (g *Engine) DeleteTasks(ctx context.Context, topic string) (*ratus.Deleted,
 // GetTask gets a task by its unique ID.
 func (g *Engine) GetTask(ctx context.Context, id string) (*ratus.Task, error) {
 	var v ratus.Task
-	f := bson.D{{Key: "_id", Value: id}}
+	f := bson.D{{Key: keyID, Value: id}}
 	o := options.FindOne().SetAllowPartialResults(true).SetHint(hintID)
 	if err := g.collection.FindOne(ctx, f, o).Decode(&v); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -176,7 +176,7 @@ func (g *Engine) upsertTaskReplace(ctx context.Context, t *ratus.Task) (*ratus.U
 	// Perform replace operation with upsert enabled.
 	// This operation is expected to work only on unsharded collections and
 	// sharded collections using the ID field as the shard key.
-	f := bson.D{{Key: "_id", Value: t.ID}}
+	f := bson.D{{Key: keyID, Value: t.ID}}
 	o := options.Replace().SetUpsert(true).SetHint(hintID)
 	r, err := g.collection.ReplaceOne(ctx, f, t, o)
 	if err != nil {
@@ -191,7 +191,7 @@ func (g *Engine) upsertTaskReplace(ctx context.Context, t *ratus.Task) (*ratus.U
 
 // DeleteTask deletes a task by its unique ID.
 func (g *Engine) DeleteTask(ctx context.Context, id string) (*ratus.Deleted, error) {
-	f := bson.D{{Key: "_id", Value: id}}
+	f := bson.D{{Key: keyID, Value: id}}
 	o := options.Delete().SetHint(hintID)
 	r, err := g.collection.DeleteOne(ctx, f, o)
 	if err != nil {

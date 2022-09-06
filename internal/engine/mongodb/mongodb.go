@@ -16,6 +16,19 @@ import (
 	"github.com/hyperonym/ratus/internal/nonce"
 )
 
+// Name constants for keys in BSON documents.
+const (
+	keyID        = "_id"
+	keyTopic     = "topic"
+	keyState     = "state"
+	keyNonce     = "nonce"
+	keyConsumer  = "consumer"
+	keyScheduled = "scheduled"
+	keyConsumed  = "consumed"
+	keyDeadline  = "deadline"
+	keyPayload   = "payload"
+)
+
 // Name constants for index creation and selection.
 const (
 	hintID                    = "_id_"
@@ -28,9 +41,9 @@ const (
 
 // Partial filter expressions for index creation.
 var (
-	filterStatePending   = bson.D{{Key: "state", Value: ratus.TaskStatePending}}
-	filterStateActive    = bson.D{{Key: "state", Value: ratus.TaskStateActive}}
-	filterStateCompleted = bson.D{{Key: "state", Value: ratus.TaskStateCompleted}}
+	filterStatePending   = bson.D{{Key: keyState, Value: ratus.TaskStatePending}}
+	filterStateActive    = bson.D{{Key: keyState, Value: ratus.TaskStateActive}}
+	filterStateCompleted = bson.D{{Key: keyState, Value: ratus.TaskStateCompleted}}
 )
 
 // List of MongoDB server error codes that should trigger a fallback.
@@ -171,19 +184,19 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 	e.Go(func() error {
 		_, err := v.CreateMany(ctx, []mongo.IndexModel{
 			{
-				Keys:    bson.D{{Key: "topic", Value: "hashed"}},
+				Keys:    bson.D{{Key: keyTopic, Value: "hashed"}},
 				Options: options.Index().SetName(hintTopic),
 			},
 			{
-				Keys:    bson.D{{Key: "topic", Value: 1}, {Key: "scheduled", Value: 1}},
+				Keys:    bson.D{{Key: keyTopic, Value: 1}, {Key: keyScheduled, Value: 1}},
 				Options: options.Index().SetName(hintPendingTopicScheduled).SetPartialFilterExpression(filterStatePending),
 			},
 			{
-				Keys:    bson.D{{Key: "deadline", Value: 1}},
+				Keys:    bson.D{{Key: keyDeadline, Value: 1}},
 				Options: options.Index().SetName(hintActiveDeadline).SetPartialFilterExpression(filterStateActive),
 			},
 			{
-				Keys:    bson.D{{Key: "topic", Value: 1}},
+				Keys:    bson.D{{Key: keyTopic, Value: 1}},
 				Options: options.Index().SetName(hintActiveTopic).SetPartialFilterExpression(filterStateActive),
 			},
 		})
@@ -193,7 +206,7 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 	// Create TTL index to automatically delete completed tasks that have
 	// exceeded their retention period.
 	e.Go(func() error {
-		k := bson.D{{Key: "consumed", Value: 1}}
+		k := bson.D{{Key: keyConsumed, Value: 1}}
 		s := int32(g.config.RetentionPeriod.Seconds())
 
 		// Attempt to create a new TTL index. This operation will fail if the
@@ -232,10 +245,10 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 func (g *Engine) peek(ctx context.Context, filter, sort any, hint string) (*ratus.Task, error) {
 	var v ratus.Task
 	j := bson.D{
-		{Key: "_id", Value: 1},
-		{Key: "topic", Value: 1},
-		{Key: "state", Value: 1},
-		{Key: "nonce", Value: 1},
+		{Key: keyID, Value: 1},
+		{Key: keyTopic, Value: 1},
+		{Key: keyState, Value: 1},
+		{Key: keyNonce, Value: 1},
 	}
 	o := options.FindOne().SetAllowPartialResults(true).SetSort(sort).SetProjection(j).SetHint(hint)
 	if err := g.collection.FindOne(ctx, filter, o).Decode(&v); err != nil {
@@ -254,9 +267,9 @@ func (g *Engine) exists(ctx context.Context, filter any, hint string) bool {
 // topic to find the next available task based on the scheduled time.
 func queryOpsPoll(topic string, t time.Time) bson.D {
 	return bson.D{
-		{Key: "state", Value: ratus.TaskStatePending},
-		{Key: "topic", Value: topic},
-		{Key: "scheduled", Value: bson.D{
+		{Key: keyState, Value: ratus.TaskStatePending},
+		{Key: keyTopic, Value: topic},
+		{Key: keyScheduled, Value: bson.D{
 			{Key: "$lte", Value: t},
 		}},
 	}
@@ -268,8 +281,8 @@ func queryOpsPoll(topic string, t time.Time) bson.D {
 func updateOpsRecover() bson.D {
 	return bson.D{
 		{Key: "$set", Value: bson.D{
-			{Key: "state", Value: ratus.TaskStatePending},
-			{Key: "nonce", Value: ""},
+			{Key: keyState, Value: ratus.TaskStatePending},
+			{Key: keyNonce, Value: ""},
 		}},
 	}
 }
@@ -279,11 +292,11 @@ func updateOpsRecover() bson.D {
 func updateOpsConsume(p *ratus.Promise, t time.Time) bson.D {
 	return bson.D{
 		{Key: "$set", Value: bson.D{
-			{Key: "state", Value: ratus.TaskStateActive},
-			{Key: "nonce", Value: nonce.Generate(ratus.NonceLength)},
-			{Key: "consumer", Value: p.Consumer},
-			{Key: "consumed", Value: t},
-			{Key: "deadline", Value: p.Deadline},
+			{Key: keyState, Value: ratus.TaskStateActive},
+			{Key: keyNonce, Value: nonce.Generate(ratus.NonceLength)},
+			{Key: keyConsumer, Value: p.Consumer},
+			{Key: keyConsumed, Value: t},
+			{Key: keyDeadline, Value: p.Deadline},
 		}},
 	}
 }
@@ -293,16 +306,16 @@ func updateOpsConsume(p *ratus.Promise, t time.Time) bson.D {
 func updateOpsCommit(m *ratus.Commit) bson.D {
 	var s bson.D
 	if m.Topic != "" {
-		s = append(s, bson.E{Key: "topic", Value: m.Topic})
+		s = append(s, bson.E{Key: keyTopic, Value: m.Topic})
 	}
 	if m.State != nil {
-		s = append(s, bson.E{Key: "state", Value: m.State})
+		s = append(s, bson.E{Key: keyState, Value: m.State})
 	}
 	if m.Scheduled != nil {
-		s = append(s, bson.E{Key: "scheduled", Value: m.Scheduled})
+		s = append(s, bson.E{Key: keyScheduled, Value: m.Scheduled})
 	}
 	if m.Payload != nil {
-		s = append(s, bson.E{Key: "payload", Value: m.Payload})
+		s = append(s, bson.E{Key: keyPayload, Value: m.Payload})
 	}
 	return bson.D{{Key: "$set", Value: s}}
 }

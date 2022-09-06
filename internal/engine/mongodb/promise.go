@@ -14,8 +14,8 @@ import (
 // ListPromises lists all promises in a topic.
 func (g *Engine) ListPromises(ctx context.Context, topic string, limit, offset int) ([]*ratus.Promise, error) {
 	f := bson.D{
-		{Key: "state", Value: ratus.TaskStateActive},
-		{Key: "topic", Value: topic},
+		{Key: keyState, Value: ratus.TaskStateActive},
+		{Key: keyTopic, Value: topic},
 	}
 
 	// Promises in effect are represented in MongoDB as fields of the active tasks.
@@ -35,8 +35,8 @@ func (g *Engine) ListPromises(ctx context.Context, topic string, limit, offset i
 // DeletePromises deletes all promises in a topic.
 func (g *Engine) DeletePromises(ctx context.Context, topic string) (*ratus.Deleted, error) {
 	f := bson.D{
-		{Key: "state", Value: ratus.TaskStateActive},
-		{Key: "topic", Value: topic},
+		{Key: keyState, Value: ratus.TaskStateActive},
+		{Key: keyTopic, Value: topic},
 	}
 
 	// Deleting promises is equivalent to setting the states of the active
@@ -56,8 +56,8 @@ func (g *Engine) DeletePromises(ctx context.Context, topic string) (*ratus.Delet
 func (g *Engine) GetPromise(ctx context.Context, id string) (*ratus.Promise, error) {
 	var v ratus.Promise
 	f := bson.D{
-		{Key: "_id", Value: id},
-		{Key: "state", Value: ratus.TaskStateActive},
+		{Key: keyID, Value: id},
+		{Key: keyState, Value: ratus.TaskStateActive},
 	}
 
 	// A promise in effect is represented in MongoDB as fields of an active task.
@@ -90,8 +90,8 @@ func (g *Engine) insertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 	var v ratus.Task
 	t := time.Now()
 	f := bson.D{
-		{Key: "_id", Value: p.ID},
-		{Key: "state", Value: ratus.TaskStatePending},
+		{Key: keyID, Value: p.ID},
+		{Key: keyState, Value: ratus.TaskStatePending},
 	}
 	u := updateOpsConsume(p, t)
 	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
@@ -100,7 +100,7 @@ func (g *Engine) insertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 		// Check if the failure is due to a mismatch of state or the target
 		// task does not exist.
 		if err == mongo.ErrNoDocuments {
-			if g.exists(ctx, bson.D{{Key: "_id", Value: p.ID}}, hintID) {
+			if g.exists(ctx, bson.D{{Key: keyID, Value: p.ID}}, hintID) {
 				err = ratus.ErrConflict
 			} else {
 				err = ratus.ErrNotFound
@@ -116,7 +116,7 @@ func (g *Engine) insertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 func (g *Engine) insertPromiseOptimistic(ctx context.Context, p *ratus.Promise) (*ratus.Task, error) {
 
 	// Get current information of the target task.
-	f := bson.D{{Key: "_id", Value: p.ID}}
+	f := bson.D{{Key: keyID, Value: p.ID}}
 	c, err := g.peek(ctx, f, nil, hintID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -135,9 +135,9 @@ func (g *Engine) insertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 	// sharding strategies.
 	var v ratus.Task
 	t := time.Now()
-	f = append(f, bson.E{Key: "topic", Value: c.Topic})
-	f = append(f, bson.E{Key: "state", Value: ratus.TaskStatePending})
-	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
+	f = append(f, bson.E{Key: keyTopic, Value: c.Topic})
+	f = append(f, bson.E{Key: keyState, Value: ratus.TaskStatePending})
+	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
 	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
@@ -170,7 +170,7 @@ func (g *Engine) upsertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 	// sharded collections using the ID field as the shard key.
 	var v ratus.Task
 	t := time.Now()
-	f := bson.D{{Key: "_id", Value: p.ID}}
+	f := bson.D{{Key: keyID, Value: p.ID}}
 	u := updateOpsConsume(p, t)
 	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
@@ -187,7 +187,7 @@ func (g *Engine) upsertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 func (g *Engine) upsertPromiseOptimistic(ctx context.Context, p *ratus.Promise) (*ratus.Task, error) {
 
 	// Get current information of the target task.
-	f := bson.D{{Key: "_id", Value: p.ID}}
+	f := bson.D{{Key: keyID, Value: p.ID}}
 	c, err := g.peek(ctx, f, nil, hintID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -201,9 +201,9 @@ func (g *Engine) upsertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 	// sharding strategies.
 	var v ratus.Task
 	t := time.Now()
-	f = append(f, bson.E{Key: "topic", Value: c.Topic})
-	f = append(f, bson.E{Key: "state", Value: c.State})
-	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
+	f = append(f, bson.E{Key: keyTopic, Value: c.Topic})
+	f = append(f, bson.E{Key: keyState, Value: c.State})
+	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
 	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
@@ -222,8 +222,8 @@ func (g *Engine) upsertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 // DeletePromise deletes a promise by the unique ID of its target task.
 func (g *Engine) DeletePromise(ctx context.Context, id string) (*ratus.Deleted, error) {
 	f := bson.D{
-		{Key: "_id", Value: id},
-		{Key: "state", Value: ratus.TaskStateActive},
+		{Key: keyID, Value: id},
+		{Key: keyState, Value: ratus.TaskStateActive},
 	}
 
 	// Deleting a promise is equivalent to setting the state of the target task

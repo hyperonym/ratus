@@ -16,8 +16,8 @@ func (g *Engine) Chore(ctx context.Context) error {
 
 	// Find all active tasks whose deadline is before the current time.
 	f := bson.D{
-		{Key: "state", Value: ratus.TaskStateActive},
-		{Key: "deadline", Value: bson.D{
+		{Key: keyState, Value: ratus.TaskStateActive},
+		{Key: keyDeadline, Value: bson.D{
 			{Key: "$lt", Value: time.Now()},
 		}},
 	}
@@ -52,7 +52,7 @@ func (g *Engine) pollAtomic(ctx context.Context, topic string, p *ratus.Promise)
 	t := time.Now()
 	f := queryOpsPoll(topic, t)
 	u := updateOpsConsume(p, t)
-	s := bson.D{{Key: "scheduled", Value: 1}}
+	s := bson.D{{Key: keyScheduled, Value: 1}}
 	o := options.FindOneAndUpdate().SetUpsert(false).SetSort(s).SetReturnDocument(options.After).SetHint(hintPendingTopicScheduled)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -70,7 +70,7 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 	// Peek into the topic to get the ID and nonce of the next candidate task.
 	t := time.Now()
 	f := queryOpsPoll(topic, t)
-	s := bson.D{{Key: "scheduled", Value: 1}}
+	s := bson.D{{Key: keyScheduled, Value: 1}}
 	c, err := g.peek(ctx, f, s, hintPendingTopicScheduled)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -83,8 +83,8 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 	// This operation is expected to work on sharded collections using various
 	// sharding strategies.
 	var v ratus.Task
-	f = append(f, bson.E{Key: "_id", Value: c.ID})
-	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
+	f = append(f, bson.E{Key: keyID, Value: c.ID})
+	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
 	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
@@ -115,9 +115,9 @@ func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (
 
 	// Verify the nonce if provided to invalidate unintended commits.
 	var v ratus.Task
-	f := bson.D{{Key: "_id", Value: id}}
+	f := bson.D{{Key: keyID, Value: id}}
 	if m.Nonce != "" {
-		f = append(f, bson.E{Key: "nonce", Value: m.Nonce})
+		f = append(f, bson.E{Key: keyNonce, Value: m.Nonce})
 	}
 	u := updateOpsCommit(m)
 	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
@@ -130,7 +130,7 @@ func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (
 		// Check if the failure is due to a mismatch of nonce or the target
 		// task does not exist.
 		if err == mongo.ErrNoDocuments {
-			if m.Nonce != "" && g.exists(ctx, bson.D{{Key: "_id", Value: id}}, hintID) {
+			if m.Nonce != "" && g.exists(ctx, bson.D{{Key: keyID, Value: id}}, hintID) {
 				err = ratus.ErrConflict
 			} else {
 				err = ratus.ErrNotFound
@@ -146,7 +146,7 @@ func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (
 func (g *Engine) commitOptimistic(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error) {
 
 	// Get current information of the target task.
-	f := bson.D{{Key: "_id", Value: id}}
+	f := bson.D{{Key: keyID, Value: id}}
 	c, err := g.peek(ctx, f, nil, hintID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -164,9 +164,9 @@ func (g *Engine) commitOptimistic(ctx context.Context, id string, m *ratus.Commi
 	// This operation is expected to work on sharded collections using various
 	// sharding strategies.
 	var v ratus.Task
-	f = append(f, bson.E{Key: "topic", Value: c.Topic})
-	f = append(f, bson.E{Key: "state", Value: c.State})
-	f = append(f, bson.E{Key: "nonce", Value: c.Nonce})
+	f = append(f, bson.E{Key: keyTopic, Value: c.Topic})
+	f = append(f, bson.E{Key: keyState, Value: c.State})
+	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsCommit(m)
 	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
