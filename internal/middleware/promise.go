@@ -21,13 +21,13 @@ func Promise() gin.HandlerFunc {
 		c.ShouldBindQuery(&p)
 
 		// Validate and normalize the promise.
-		if err := normalizePromise(&p, c.Param("id")); err != nil {
+		if err := normalizePromise(&p, c.Param(ParamID)); err != nil {
 			fail(c, fmt.Errorf("%w: %v", ratus.ErrBadRequest, err))
 			return
 		}
 
 		// Store the normalized promise in the request context.
-		c.Set("promise", &p)
+		c.Set(ParamPromise, &p)
 
 		c.Next()
 	}

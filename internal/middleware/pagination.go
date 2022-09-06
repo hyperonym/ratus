@@ -52,8 +52,8 @@ func Pagination(pc *config.PaginationConfig) gin.HandlerFunc {
 		}
 
 		// Store normalized pagination options in the request context.
-		c.Set("limit", p.Limit)
-		c.Set("offset", p.Offset)
+		c.Set(ParamLimit, p.Limit)
+		c.Set(ParamOffset, p.Offset)
 
 		c.Next()
 	}

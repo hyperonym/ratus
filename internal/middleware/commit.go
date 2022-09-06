@@ -25,7 +25,7 @@ func Commit() gin.HandlerFunc {
 		}
 
 		// Store the normalized commit in the request context.
-		c.Set("commit", &m)
+		c.Set(ParamCommit, &m)
 
 		c.Next()
 	}

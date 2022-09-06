@@ -27,13 +27,13 @@ func Task() gin.HandlerFunc {
 		}
 
 		// Validate and normalize the task.
-		if err := normalizeTask(&t, c.Param("id"), c.Param("topic")); err != nil {
+		if err := normalizeTask(&t, c.Param(ParamID), c.Param(ParamTopic)); err != nil {
 			fail(c, fmt.Errorf("%w: %v", ratus.ErrBadRequest, err))
 			return
 		}
 
 		// Store the normalized task in the request context.
-		c.Set("task", &t)
+		c.Set(ParamTask, &t)
 
 		c.Next()
 	}
@@ -55,7 +55,7 @@ func Tasks() gin.HandlerFunc {
 		}
 
 		// Validate and normalize all tasks in the list.
-		p := c.Param("topic")
+		p := c.Param(ParamTopic)
 		for _, t := range ts.Data {
 			if err := normalizeTask(t, "", p); err != nil {
 				fail(c, fmt.Errorf("%w: %v", ratus.ErrBadRequest, err))
@@ -69,7 +69,7 @@ func Tasks() gin.HandlerFunc {
 		}
 
 		// Store the normalized task list in the request context.
-		c.Set("tasks", &ts)
+		c.Set(ParamTasks, &ts)
 
 		c.Next()
 	}

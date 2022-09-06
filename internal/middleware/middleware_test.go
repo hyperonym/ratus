@@ -32,8 +32,8 @@ func (g *group) Mount(r *gin.RouterGroup) {
 		MaxOffset: 20,
 	}), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"limit":  c.GetInt("limit"),
-			"offset": c.GetInt("offset"),
+			"limit":  c.GetInt(middleware.ParamLimit),
+			"offset": c.GetInt(middleware.ParamOffset),
 		})
 	})
 
@@ -42,25 +42,25 @@ func (g *group) Mount(r *gin.RouterGroup) {
 		MaxOffset: 5,
 	}), func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
-			"limit":  c.GetInt("limit"),
-			"offset": c.GetInt("offset"),
+			"limit":  c.GetInt(middleware.ParamLimit),
+			"offset": c.GetInt(middleware.ParamOffset),
 		})
 	})
 
 	r.POST("/topics/:topic/tasks/:id", middleware.Task(), func(c *gin.Context) {
-		c.JSON(http.StatusOK, c.MustGet("task"))
+		c.JSON(http.StatusOK, c.MustGet(middleware.ParamTask))
 	})
 
 	r.POST("/topics/:topic/tasks", middleware.Tasks(), func(c *gin.Context) {
-		c.JSON(http.StatusOK, c.MustGet("tasks"))
+		c.JSON(http.StatusOK, c.MustGet(middleware.ParamTasks))
 	})
 
 	r.POST("/topics/:topic/promises/:id", middleware.Promise(), func(c *gin.Context) {
-		c.JSON(http.StatusOK, c.MustGet("promise"))
+		c.JSON(http.StatusOK, c.MustGet(middleware.ParamPromise))
 	})
 
 	r.PATCH("/topics/:topic/tasks/:id", middleware.Commit(), func(c *gin.Context) {
-		c.JSON(http.StatusOK, c.MustGet("commit"))
+		c.JSON(http.StatusOK, c.MustGet(middleware.ParamCommit))
 	})
 }
 
