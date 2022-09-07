@@ -10,6 +10,7 @@ import (
 	"github.com/alexflint/go-arg"
 	"go.mongodb.org/mongo-driver/bson"
 
+	"github.com/hyperonym/ratus/internal/engine"
 	"github.com/hyperonym/ratus/internal/engine/mongodb"
 )
 
@@ -88,9 +89,43 @@ func TestConfig(t *testing.T) {
 	}
 }
 
+func TestSuite(t *testing.T) {
+	skipShort(t)
+	db := "ratus_test_suite"
+	col := fmt.Sprintf("test_suite_%d", time.Now().UnixMicro())
+
+	t.Run("preferred", func(t *testing.T) {
+		t.Parallel()
+		g, err := mongodb.New(&mongodb.Config{
+			URI:        mongoURI,
+			Database:   db,
+			Collection: col + "_preferred",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		g.Fallback(-1)
+		engine.Test(t, g)
+	})
+
+	t.Run("fallback", func(t *testing.T) {
+		t.Parallel()
+		g, err := mongodb.New(&mongodb.Config{
+			URI:        mongoURI,
+			Database:   db,
+			Collection: col + "_fallback",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		g.Fallback(1)
+		engine.Test(t, g)
+	})
+}
+
 func TestIndex(t *testing.T) {
 	skipShort(t)
-	db := "ratus_test"
+	db := "ratus_test_index"
 	col := fmt.Sprintf("test_index_%d", time.Now().UnixMicro())
 
 	t.Run("none", func(t *testing.T) {
