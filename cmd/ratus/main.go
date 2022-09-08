@@ -1,14 +1,29 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"math/rand"
+	"net/http"
+	"os"
+	"os/signal"
 	"runtime/debug"
+	"strings"
+	"syscall"
+	"time"
 
 	"github.com/alexflint/go-arg"
+	"golang.org/x/sync/errgroup"
 
+	"github.com/hyperonym/ratus/docs"
 	"github.com/hyperonym/ratus/internal/config"
+	"github.com/hyperonym/ratus/internal/controller"
+	"github.com/hyperonym/ratus/internal/engine"
 	"github.com/hyperonym/ratus/internal/engine/mongodb"
+	"github.com/hyperonym/ratus/internal/metrics"
+	"github.com/hyperonym/ratus/internal/middleware"
+	"github.com/hyperonym/ratus/internal/router"
 )
 
 // version contains the version string set by -ldflags.
@@ -61,8 +76,142 @@ func run() error {
 	var a args
 	arg.MustParse(&a)
 
-	// TODO
-	fmt.Printf("%#v\n", a)
+	// Create a context without timeout for the initialization phase.
+	ctx := context.Background()
+
+	// Create storage engine instance.
+	var (
+		g   engine.Engine
+		err error
+	)
+	switch strings.ToLower(a.Engine) {
+	case "mongodb":
+		g, err = mongodb.New(&a.mongodbConfig)
+	default:
+		err = fmt.Errorf("unknown storage engine: %s", a.Engine)
+	}
+	if err != nil {
+		return err
+	}
+
+	// Open storage engine.
+	if err := g.Open(ctx); err != nil {
+		return err
+	}
+	defer g.Close(ctx)
+
+	// Create router and mount API endpoints.
+	r := router.New(&controller.V1{
+		Pagination: middleware.Pagination(&a.PaginationConfig),
+		Topic:      controller.NewTopicController(g),
+		Task:       controller.NewTaskController(g),
+		Promise:    controller.NewPromiseController(g),
+		Health:     controller.NewHealthController(g),
+		Metrics:    controller.NewMetricsController(g),
+	}, &docs.Swagger{})
+
+	// Start API server and background jobs.
+	e, ctx := errgroup.WithContext(ctx)
+	e.Go(func() error {
+		return serve(ctx, r.Handler(), &a.ServerConfig)
+	})
+	e.Go(func() error {
+		return chore(ctx, g, &a.ChoreConfig)
+	})
+
+	return e.Wait()
+}
+
+func serve(ctx context.Context, h http.Handler, c *config.ServerConfig) error {
+
+	// A port number of zero will not start the API server.
+	// Allowing the instance to be responsible for running background jobs only.
+	if c.Port <= 0 {
+		return nil
+	}
+
+	// Create HTTP server using the provided handler.
+	a := fmt.Sprintf("%s:%d", c.Bind, c.Port)
+	s := &http.Server{
+		Addr:    a,
+		Handler: h,
+	}
+
+	// Listen for termination signals.
+	go func() {
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+		select {
+		// Gracefully shut down the server when an interrupt or SIGTERM signal
+		// is received.
+		case <-ch:
+			log.Printf("stop listening on %s\n", a)
+			s.Shutdown(context.Background())
+		// Close the server immediately if the context has been canceled or
+		// another goroutine in the error group has return an error.
+		case <-ctx.Done():
+			s.Close()
+		}
+	}()
+
+	// Return errors other than those caused by manual closing the server.
+	log.Printf("start listening on %s\n", a)
+	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return err
+	}
 
 	return nil
+}
+
+func chore(ctx context.Context, g engine.Engine, c *config.ChoreConfig) error {
+
+	// An interval of zero will not start the background jobs.
+	// Allowing the instance to be responsible for handling requests only.
+	if c.Interval <= 0 {
+		return nil
+	}
+
+	// Calculate initial delay for the ticker.
+	m := 1.0
+	if c.InitialRandom {
+		s := rand.NewSource(time.Now().UnixNano())
+		m = rand.New(s).Float64()
+	}
+	d := time.Duration(c.InitialDelay.Seconds()*m*float64(time.Second) + 1)
+
+	// Listen for termination signals.
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+
+	// Start ticker for background jobs. The ticker will adjust the time
+	// interval or drop ticks to make up for slow receivers.
+	var n bool
+	r := time.NewTicker(d)
+	for {
+		select {
+		case <-ch:
+			log.Println("stop running background jobs")
+			r.Stop()
+			return nil
+		case <-ctx.Done():
+			r.Stop()
+			return ctx.Err()
+		case <-r.C:
+
+			// Set to the normal interval after the initial delay.
+			if !n {
+				log.Println("start running background jobs")
+				n = true
+				r.Reset(c.Interval)
+			}
+
+			// Run background jobs and collect the elapsed time.
+			t := time.Now()
+			if err := g.Chore(ctx); err != nil {
+				log.Println(err)
+			}
+
+			metrics.ChoreHistogram.Observe(time.Since(t).Seconds())
+		}
+	}
 }
