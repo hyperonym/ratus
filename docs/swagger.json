@@ -14,7 +14,1224 @@
         "version": "v1"
     },
     "basePath": "/v1",
-    "paths": {},
+    "paths": {
+        "/livez": {
+            "get": {
+                "tags": [
+                    "health"
+                ],
+                "summary": "Get the the liveness of the instance",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/metrics": {
+            "get": {
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "metrics"
+                ],
+                "summary": "Get Prometheus metrics of the instance",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/readyz": {
+            "get": {
+                "tags": [
+                    "health"
+                ],
+                "summary": "Get the the readiness of the instance",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topics"
+                ],
+                "summary": "List all topics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of resources to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of resources to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Topics"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topics"
+                ],
+                "summary": "Delete all topics and tasks",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics/{topic}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topics"
+                ],
+                "summary": "Get information about a topic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Topic"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "topics"
+                ],
+                "summary": "Delete a topic and its tasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics/{topic}/promises": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "List all promises in a topic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of resources to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of resources to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Promises"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Claim the next available task in the topic based on the scheduled time",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Wildcard promise object to be inserted",
+                        "name": "promise",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Promise"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Delete all promises in a topic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics/{topic}/promises/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Get a promise by the unique ID of its target task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the target task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Promise"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Claim the target task regardless of its current state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the target task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Promise object to be inserted or updated",
+                        "name": "promise",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Promise"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Claim the target task if it is in pending state",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the target task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Promise object to be inserted",
+                        "name": "promise",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Promise"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promises"
+                ],
+                "summary": "Delete a promise by the unique ID of its target task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the target task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics/{topic}/tasks": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "List all tasks in a topic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of resources to return",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of resources to skip",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Tasks"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Insert or update a batch of tasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Batch of tasks to be inserted or updated",
+                        "name": "tasks",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Tasks"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Insert a batch of tasks while ignoring existing ones",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Batch of tasks to be inserted",
+                        "name": "tasks",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Tasks"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Delete all tasks in a topic",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/topics/{topic}/tasks/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get a task by its unique ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Insert or update a task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Task object to be inserted or updated",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Insert a new task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Task object to be inserted",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Updated"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Delete a task by its unique ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Deleted"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Apply a set of updates to a task and return the updated task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name of the topic",
+                        "name": "topic",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Unique ID of the task",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Commit object to be applied",
+                        "name": "commit",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Commit"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/ratus.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ratus.Commit": {
+            "type": "object",
+            "properties": {
+                "defer": {
+                    "description": "A duration relative to the time the commit is accepted, indicating that\nthe task will be scheduled to execute after this duration. When the\nabsolute scheduled time is specified, the scheduled time will take\nprecedence. It is recommended to use relative durations whenever\npossible to avoid clock synchronization issues. The value must be a\nvalid duration string parsable by time.ParseDuration. This field is only\nused when creating a commit and will be cleared after converting to an\nabsolute scheduled time.",
+                    "type": "string"
+                },
+                "nonce": {
+                    "description": "If not empty, the commit will be accepted only if the value matches the\ncorresponding nonce of the target task.",
+                    "type": "string"
+                },
+                "payload": {
+                    "description": "If not nil, use this value to replace the payload of the task."
+                },
+                "scheduled": {
+                    "description": "If not nil, set the scheduled time of the task to the specified value.",
+                    "type": "string"
+                },
+                "state": {
+                    "description": "If not nil, set the state of the task to the specified value.\nIf nil, the state of the task will be set to \"completed\" by default.",
+                    "type": "integer"
+                },
+                "topic": {
+                    "description": "If not empty, transfer the task to the specified topic.",
+                    "type": "string"
+                }
+            }
+        },
+        "ratus.Deleted": {
+            "type": "object",
+            "properties": {
+                "deleted": {
+                    "description": "Number of resources deleted by the operation.",
+                    "type": "integer"
+                }
+            }
+        },
+        "ratus.Error": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "The error object.",
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "description": "Code of the error.",
+                            "type": "integer"
+                        },
+                        "message": {
+                            "description": "Message of the error.",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "ratus.Promise": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "description": "Unique ID of the promise, which is the same as the target task ID.\nA promise with an empty ID is considered an \"wildcard promise\", and\nRatus will assign an appropriate task based on the status of the queue.\nA task can only be owned by a single promise at a given time.",
+                    "type": "string"
+                },
+                "consumer": {
+                    "description": "Identifier of the consumer instance who consumed the task.",
+                    "type": "string"
+                },
+                "deadline": {
+                    "description": "The deadline for the completion of execution promised by the consumer.\nConsumer code needs to commit the task before this deadline, otherwise\nthe task is determined to have timed out and will be reset to the\n\"pending\" state, allowing other consumers to retry.",
+                    "type": "string"
+                },
+                "timeout": {
+                    "description": "Timeout duration for task execution promised by the consumer. When the\nabsolute deadline time is specified, the deadline will take precedence.\nIt is recommended to use relative durations whenever possible to avoid\nclock synchronization issues. The value must be a valid duration string\nparsable by time.ParseDuration. This field is only used when creating a\npromise and will be cleared after converting to an absolute deadline.",
+                    "type": "string"
+                }
+            }
+        },
+        "ratus.Promises": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ratus.Promise"
+                    }
+                }
+            }
+        },
+        "ratus.Task": {
+            "type": "object",
+            "properties": {
+                "_id": {
+                    "description": "User-defined unique ID of the task.\nWhen using the MongoDB storage engine, tasks across all topics are\nstored in the same collection, thus their IDs share the same namespace.\nThis is an intentional tradeoff to allow tasks to be efficiently moved\nfrom one topic to another.",
+                    "type": "string"
+                },
+                "consumed": {
+                    "description": "The time the task was claimed by a consumer.\nNot to confuse this with the time of commit, which is not recorded.",
+                    "type": "string"
+                },
+                "consumer": {
+                    "description": "Identifier of the consumer instance who consumed the task.",
+                    "type": "string"
+                },
+                "deadline": {
+                    "description": "The deadline for the completion of execution promised by the consumer.\nConsumer code needs to commit the task before this deadline, otherwise\nthe task is determined to have timed out and will be reset to the\n\"pending\" state, allowing other consumers to retry.",
+                    "type": "string"
+                },
+                "defer": {
+                    "description": "A duration relative to the time the task is accepted, indicating that\nthe task will be scheduled to execute after this duration. When the\nabsolute scheduled time is specified, the scheduled time will take\nprecedence. It is recommended to use relative durations whenever\npossible to avoid clock synchronization issues. The value must be a\nvalid duration string parsable by time.ParseDuration. This field is only\nused when creating a task and will be cleared after converting to an\nabsolute scheduled time.",
+                    "type": "string"
+                },
+                "nonce": {
+                    "description": "The nonce field stores a random string for implementing an optimistic\nconcurrency control (OCC) layer outside of the storage engine. Ratus\nensures consumers can only commit to tasks that have not changed since\nthe promise was made by verifying the nonce field.",
+                    "type": "string"
+                },
+                "payload": {
+                    "description": "A minimal descriptor of the task to be executed.\nIt is not recommended to rely on Ratus as the main storage of tasks.\nInstead, consider storing the complete task record in a database, and\nuse a minimal descriptor as the payload to reference the task."
+                },
+                "produced": {
+                    "description": "The time the task was created.\nTimestamps are generated by the instance running Ratus, remember to\nperform clock synchronization before running multiple instances.",
+                    "type": "string"
+                },
+                "producer": {
+                    "description": "Identifier of the producer instance who produced the task.",
+                    "type": "string"
+                },
+                "scheduled": {
+                    "description": "The time the task is scheduled to be executed. Tasks will not be\nexecuted until the scheduled time arrives. After the scheduled time,\nexcessive tasks will be executed in the order of the scheduled time.",
+                    "type": "string"
+                },
+                "state": {
+                    "description": "Current state of the task. At a given moment, the state of a task may be\neither \"pending\", \"active\", \"completed\" or \"archived\".",
+                    "type": "integer"
+                },
+                "topic": {
+                    "description": "Topic that the task currently belongs to. Tasks under the same topic\nwill be executed according to the scheduled time.",
+                    "type": "string"
+                }
+            }
+        },
+        "ratus.Tasks": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ratus.Task"
+                    }
+                }
+            }
+        },
+        "ratus.Topic": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "description": "The number of tasks that belong to the topic.",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "User-defined unique name of the topic.",
+                    "type": "string"
+                }
+            }
+        },
+        "ratus.Topics": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ratus.Topic"
+                    }
+                }
+            }
+        },
+        "ratus.Updated": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "description": "Number of resources created by the operation.",
+                    "type": "integer"
+                },
+                "updated": {
+                    "description": "Number of resources updated by the operation.",
+                    "type": "integer"
+                }
+            }
+        }
+    },
     "tags": [
         {
             "name": "topics"

@@ -1,4 +1,200 @@
 basePath: /v1
+definitions:
+  ratus.Commit:
+    properties:
+      defer:
+        description: |-
+          A duration relative to the time the commit is accepted, indicating that
+          the task will be scheduled to execute after this duration. When the
+          absolute scheduled time is specified, the scheduled time will take
+          precedence. It is recommended to use relative durations whenever
+          possible to avoid clock synchronization issues. The value must be a
+          valid duration string parsable by time.ParseDuration. This field is only
+          used when creating a commit and will be cleared after converting to an
+          absolute scheduled time.
+        type: string
+      nonce:
+        description: |-
+          If not empty, the commit will be accepted only if the value matches the
+          corresponding nonce of the target task.
+        type: string
+      payload:
+        description: If not nil, use this value to replace the payload of the task.
+      scheduled:
+        description: If not nil, set the scheduled time of the task to the specified
+          value.
+        type: string
+      state:
+        description: |-
+          If not nil, set the state of the task to the specified value.
+          If nil, the state of the task will be set to "completed" by default.
+        type: integer
+      topic:
+        description: If not empty, transfer the task to the specified topic.
+        type: string
+    type: object
+  ratus.Deleted:
+    properties:
+      deleted:
+        description: Number of resources deleted by the operation.
+        type: integer
+    type: object
+  ratus.Error:
+    properties:
+      error:
+        description: The error object.
+        properties:
+          code:
+            description: Code of the error.
+            type: integer
+          message:
+            description: Message of the error.
+            type: string
+        type: object
+    type: object
+  ratus.Promise:
+    properties:
+      _id:
+        description: |-
+          Unique ID of the promise, which is the same as the target task ID.
+          A promise with an empty ID is considered an "wildcard promise", and
+          Ratus will assign an appropriate task based on the status of the queue.
+          A task can only be owned by a single promise at a given time.
+        type: string
+      consumer:
+        description: Identifier of the consumer instance who consumed the task.
+        type: string
+      deadline:
+        description: |-
+          The deadline for the completion of execution promised by the consumer.
+          Consumer code needs to commit the task before this deadline, otherwise
+          the task is determined to have timed out and will be reset to the
+          "pending" state, allowing other consumers to retry.
+        type: string
+      timeout:
+        description: |-
+          Timeout duration for task execution promised by the consumer. When the
+          absolute deadline time is specified, the deadline will take precedence.
+          It is recommended to use relative durations whenever possible to avoid
+          clock synchronization issues. The value must be a valid duration string
+          parsable by time.ParseDuration. This field is only used when creating a
+          promise and will be cleared after converting to an absolute deadline.
+        type: string
+    type: object
+  ratus.Promises:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ratus.Promise'
+        type: array
+    type: object
+  ratus.Task:
+    properties:
+      _id:
+        description: |-
+          User-defined unique ID of the task.
+          When using the MongoDB storage engine, tasks across all topics are
+          stored in the same collection, thus their IDs share the same namespace.
+          This is an intentional tradeoff to allow tasks to be efficiently moved
+          from one topic to another.
+        type: string
+      consumed:
+        description: |-
+          The time the task was claimed by a consumer.
+          Not to confuse this with the time of commit, which is not recorded.
+        type: string
+      consumer:
+        description: Identifier of the consumer instance who consumed the task.
+        type: string
+      deadline:
+        description: |-
+          The deadline for the completion of execution promised by the consumer.
+          Consumer code needs to commit the task before this deadline, otherwise
+          the task is determined to have timed out and will be reset to the
+          "pending" state, allowing other consumers to retry.
+        type: string
+      defer:
+        description: |-
+          A duration relative to the time the task is accepted, indicating that
+          the task will be scheduled to execute after this duration. When the
+          absolute scheduled time is specified, the scheduled time will take
+          precedence. It is recommended to use relative durations whenever
+          possible to avoid clock synchronization issues. The value must be a
+          valid duration string parsable by time.ParseDuration. This field is only
+          used when creating a task and will be cleared after converting to an
+          absolute scheduled time.
+        type: string
+      nonce:
+        description: |-
+          The nonce field stores a random string for implementing an optimistic
+          concurrency control (OCC) layer outside of the storage engine. Ratus
+          ensures consumers can only commit to tasks that have not changed since
+          the promise was made by verifying the nonce field.
+        type: string
+      payload:
+        description: |-
+          A minimal descriptor of the task to be executed.
+          It is not recommended to rely on Ratus as the main storage of tasks.
+          Instead, consider storing the complete task record in a database, and
+          use a minimal descriptor as the payload to reference the task.
+      produced:
+        description: |-
+          The time the task was created.
+          Timestamps are generated by the instance running Ratus, remember to
+          perform clock synchronization before running multiple instances.
+        type: string
+      producer:
+        description: Identifier of the producer instance who produced the task.
+        type: string
+      scheduled:
+        description: |-
+          The time the task is scheduled to be executed. Tasks will not be
+          executed until the scheduled time arrives. After the scheduled time,
+          excessive tasks will be executed in the order of the scheduled time.
+        type: string
+      state:
+        description: |-
+          Current state of the task. At a given moment, the state of a task may be
+          either "pending", "active", "completed" or "archived".
+        type: integer
+      topic:
+        description: |-
+          Topic that the task currently belongs to. Tasks under the same topic
+          will be executed according to the scheduled time.
+        type: string
+    type: object
+  ratus.Tasks:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ratus.Task'
+        type: array
+    type: object
+  ratus.Topic:
+    properties:
+      count:
+        description: The number of tasks that belong to the topic.
+        type: integer
+      name:
+        description: User-defined unique name of the topic.
+        type: string
+    type: object
+  ratus.Topics:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/ratus.Topic'
+        type: array
+    type: object
+  ratus.Updated:
+    properties:
+      created:
+        description: Number of resources created by the operation.
+        type: integer
+      updated:
+        description: Number of resources updated by the operation.
+        type: integer
+    type: object
 info:
   contact:
     name: GitHub
@@ -9,7 +205,683 @@ info:
     url: https://www.mozilla.org/en-US/MPL/2.0/
   title: Ratus
   version: v1
-paths: {}
+paths:
+  /livez:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Get the the liveness of the instance
+      tags:
+      - health
+  /metrics:
+    get:
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Get Prometheus metrics of the instance
+      tags:
+      - metrics
+  /readyz:
+    get:
+      responses:
+        "200":
+          description: OK
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Get the the readiness of the instance
+      tags:
+      - health
+  /topics:
+    delete:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete all topics and tasks
+      tags:
+      - topics
+    get:
+      parameters:
+      - description: Maximum number of resources to return
+        in: query
+        name: limit
+        type: integer
+      - description: Number of resources to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Topics'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: List all topics
+      tags:
+      - topics
+  /topics/{topic}:
+    delete:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete a topic and its tasks
+      tags:
+      - topics
+    get:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Topic'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Get information about a topic
+      tags:
+      - topics
+  /topics/{topic}/promises:
+    delete:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete all promises in a topic
+      tags:
+      - promises
+    get:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Maximum number of resources to return
+        in: query
+        name: limit
+        type: integer
+      - description: Number of resources to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Promises'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: List all promises in a topic
+      tags:
+      - promises
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Wildcard promise object to be inserted
+        in: body
+        name: promise
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Promise'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Claim the next available task in the topic based on the scheduled time
+      tags:
+      - promises
+  /topics/{topic}/promises/{id}:
+    delete:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the target task
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete a promise by the unique ID of its target task
+      tags:
+      - promises
+    get:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the target task
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Promise'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Get a promise by the unique ID of its target task
+      tags:
+      - promises
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the target task
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Promise object to be inserted
+        in: body
+        name: promise
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Promise'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Claim the target task if it is in pending state
+      tags:
+      - promises
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the target task
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Promise object to be inserted or updated
+        in: body
+        name: promise
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Promise'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Claim the target task regardless of its current state
+      tags:
+      - promises
+  /topics/{topic}/tasks:
+    delete:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete all tasks in a topic
+      tags:
+      - tasks
+    get:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Maximum number of resources to return
+        in: query
+        name: limit
+        type: integer
+      - description: Number of resources to skip
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Tasks'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: List all tasks in a topic
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Batch of tasks to be inserted
+        in: body
+        name: tasks
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Tasks'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Insert a batch of tasks while ignoring existing ones
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Batch of tasks to be inserted or updated
+        in: body
+        name: tasks
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Tasks'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Insert or update a batch of tasks
+      tags:
+      - tasks
+  /topics/{topic}/tasks/{id}:
+    delete:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the task
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Deleted'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Delete a task by its unique ID
+      tags:
+      - tasks
+    get:
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the task
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Task'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Get a task by its unique ID
+      tags:
+      - tasks
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the task
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Commit object to be applied
+        in: body
+        name: commit
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Commit'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Apply a set of updates to a task and return the updated task
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the task
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Task object to be inserted
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Task'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Insert a new task
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Name of the topic
+        in: path
+        name: topic
+        required: true
+        type: string
+      - description: Unique ID of the task
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Task object to be inserted or updated
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/ratus.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ratus.Updated'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/ratus.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ratus.Error'
+      summary: Insert or update a task
+      tags:
+      - tasks
 swagger: "2.0"
 tags:
 - name: topics
