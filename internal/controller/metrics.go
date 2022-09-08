@@ -15,7 +15,7 @@ type MetricsController struct {
 }
 
 // NewMetricsController creates a new MetricsController.
-func NewMetricsController(e engine.Engine) *MetricsController {
+func NewMetricsController(g engine.Engine) *MetricsController {
 	return &MetricsController{promhttp.Handler()}
 }
 

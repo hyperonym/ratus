@@ -14,8 +14,8 @@ type TopicController struct {
 }
 
 // NewTopicController creates a new TopicController.
-func NewTopicController(e engine.Engine) *TopicController {
-	return &TopicController{e}
+func NewTopicController(g engine.Engine) *TopicController {
+	return &TopicController{g}
 }
 
 // GetTopics lists all topics.

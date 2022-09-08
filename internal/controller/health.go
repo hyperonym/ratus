@@ -14,8 +14,8 @@ type HealthController struct {
 }
 
 // NewHealthController creates a new HealthController.
-func NewHealthController(e engine.Engine) *HealthController {
-	return &HealthController{e}
+func NewHealthController(g engine.Engine) *HealthController {
+	return &HealthController{g}
 }
 
 // GetLiveness gets the the liveness of the instance.

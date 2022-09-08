@@ -18,8 +18,8 @@ type TaskController struct {
 }
 
 // NewTaskController creates a new TaskController.
-func NewTaskController(e engine.Engine) *TaskController {
-	return &TaskController{e}
+func NewTaskController(g engine.Engine) *TaskController {
+	return &TaskController{g}
 }
 
 // GetTasks lists all tasks in a topic.

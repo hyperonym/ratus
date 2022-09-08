@@ -17,8 +17,8 @@ type PromiseController struct {
 }
 
 // NewPromiseController creates a new PromiseController.
-func NewPromiseController(e engine.Engine) *PromiseController {
-	return &PromiseController{e}
+func NewPromiseController(g engine.Engine) *PromiseController {
+	return &PromiseController{g}
 }
 
 // GetPromises lists all promises in a topic.
