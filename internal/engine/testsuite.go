@@ -15,11 +15,13 @@ import (
 )
 
 // Test runs a collection of test cases that are grouped for testing storage
-// engine implementations against the provided engine instance.
+// engine implementations. The test suite handles the initialization of the
+// provided engine instance, and clears all data when the test is completed.
+// This test suite only covers the core functionality of a storage engine
+// implementation. Test cases for optional features like TTL should be included
+// in the package of the specific engine.
 func Test(t *testing.T, g Engine) {
 	ctx := context.Background()
-
-	// Test life cycle.
 	if err := g.Open(ctx); err != nil {
 		t.Fatal(err)
 	}
