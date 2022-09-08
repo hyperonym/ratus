@@ -300,7 +300,7 @@ func Test(t *testing.T, g Engine) {
 			s := ratus.TaskStateCompleted
 			m := &ratus.Commit{
 				Nonce:     v.Nonce,
-				Topic:     "done",
+				Topic:     "completed",
 				State:     &s,
 				Scheduled: &n,
 				Payload:   "completed",
@@ -325,7 +325,7 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 2 {
 				t.Errorf("incorrect number of results, expected 2, got %d", len(v))
 			}
-			d, err := g.DeleteTopic(ctx, "done")
+			d, err := g.DeleteTopic(ctx, "completed")
 			if err != nil {
 				t.Error(err)
 			}
