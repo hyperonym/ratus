@@ -765,4 +765,62 @@ func Test(t *testing.T, g Engine) {
 			}
 		})
 	})
+
+	// Test operations related to task scheduling.
+	t.Run("schedule", func(t *testing.T) {
+		n := time.Now()
+		n1 := n.Add(1 * time.Second)
+		n2 := n.Add(2 * time.Second)
+		if _, err := g.InsertTasks(ctx, []*ratus.Task{
+			{
+				ID:        "1",
+				Topic:     "test",
+				State:     ratus.TaskStatePending,
+				Produced:  &n,
+				Scheduled: &n,
+				Payload:   "a",
+			},
+			{
+				ID:        "2",
+				Topic:     "test",
+				State:     ratus.TaskStatePending,
+				Produced:  &n,
+				Scheduled: &n1,
+				Payload:   "b",
+			},
+		}); err != nil {
+			t.Error(err)
+		}
+
+		t.Run("poll", func(t *testing.T) {
+			v, err := g.Poll(ctx, "test", &ratus.Promise{Deadline: &n1})
+			if err != nil {
+				t.Error(err)
+			}
+			if v.ID != "1" {
+				t.Errorf("incorrect task order, expected %q, got %q", "1", v.ID)
+			}
+			if _, err := g.Poll(ctx, "test", &ratus.Promise{Deadline: &n1}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
+			}
+			time.Sleep(1 * time.Second)
+			v, err = g.Poll(ctx, "test", &ratus.Promise{Deadline: &n2})
+			if err != nil {
+				t.Error(err)
+			}
+			if v.ID != "2" {
+				t.Errorf("incorrect task order, expected %q, got %q", "2", v.ID)
+			}
+		})
+
+		t.Run("clean", func(t *testing.T) {
+			d, err := g.DeleteTopics(ctx)
+			if err != nil {
+				t.Error(err)
+			}
+			if d.Deleted != 2 {
+				t.Errorf("incorrect number of deletions, expected 2, got %d", d.Deleted)
+			}
+		})
+	})
 }
