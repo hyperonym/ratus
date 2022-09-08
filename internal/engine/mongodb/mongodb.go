@@ -304,9 +304,7 @@ func updateOpsConsume(p *ratus.Promise, t time.Time) bson.D {
 // updateOpsCommit returns a document containing update operators to apply a
 // commit to a task.
 func updateOpsCommit(m *ratus.Commit) bson.D {
-	s := bson.D{
-		{Key: keyNonce, Value: nonce.Generate(ratus.NonceLength)},
-	}
+	s := bson.D{{Key: keyNonce, Value: ""}}
 	if m.Topic != "" {
 		s = append(s, bson.E{Key: keyTopic, Value: m.Topic})
 	}
