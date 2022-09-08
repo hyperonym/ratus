@@ -25,10 +25,10 @@ The key features of Ratus are:
 
 ### Data Model
 
-* **Task** references an idempotent unit of work that should be executed asynchronously.
-* **Topic** refers to an ordered subset of tasks with the same topic name property.
-* **Promise** represents a claim on the ownership of an active task.
-* **Commit** contains a set of updates to be applied to a task.
+* **[Task](https://pkg.go.dev/github.com/hyperonym/ratus#Task)** references an idempotent unit of work that should be executed asynchronously.
+* **[Topic](https://pkg.go.dev/github.com/hyperonym/ratus#Topic)** refers to an ordered subset of tasks with the same topic name property.
+* **[Promise](https://pkg.go.dev/github.com/hyperonym/ratus#Promise)** represents a claim on the ownership of an active task.
+* **[Commit](https://pkg.go.dev/github.com/hyperonym/ratus#Commit)** contains a set of updates to be applied to a task.
 
 ### Workflow
 
