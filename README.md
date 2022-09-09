@@ -106,7 +106,7 @@ If the amount of data exceeds the capacity of a single node or replica set, choo
 
 ### Metrics and Labels
 
-Ratus exposes [Prometheus](https://prometheus.io) metrics via HTTP, on the `/metrics` endpoint.
+Ratus exposes the following [Prometheus](https://prometheus.io) metrics on the `/metrics` endpoint:
 
 | Name | Type | Labels |
 | --- | --- | --- |
