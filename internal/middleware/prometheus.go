@@ -16,6 +16,6 @@ func Prometheus() gin.HandlerFunc {
 		c.Next()
 		d := time.Since(t).Seconds()
 		s := strconv.Itoa(c.Writer.Status())
-		metrics.RequestHistogram.WithLabelValues(c.Param(ParamTopic), c.FullPath(), s).Observe(d)
+		metrics.RequestHistogram.WithLabelValues(c.Param(ParamTopic), c.Request.Method, c.FullPath(), s).Observe(d)
 	}
 }
