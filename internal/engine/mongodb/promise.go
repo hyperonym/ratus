@@ -72,7 +72,7 @@ func (g *Engine) GetPromise(ctx context.Context, id string) (*ratus.Promise, err
 	return &v, nil
 }
 
-// InsertPromise claims the target task if it is in pending state.
+// InsertPromise makes a promise to claim and execute a task if it is in pending state.
 func (g *Engine) InsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Task, error) {
 	return branch(func() (*ratus.Task, error) {
 		return g.insertPromiseAtomic(ctx, p)
@@ -153,7 +153,7 @@ func (g *Engine) insertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 	return &v, nil
 }
 
-// UpsertPromise claims the target task regardless of its current state.
+// UpsertPromise makes a promise to claim and execute a task regardless of its current state.
 func (g *Engine) UpsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Task, error) {
 	return branch(func() (*ratus.Task, error) {
 		return g.upsertPromiseAtomic(ctx, p)

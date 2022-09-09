@@ -32,7 +32,7 @@ func (g *Engine) Chore(ctx context.Context) error {
 	return nil
 }
 
-// Poll claims the next available task in the topic based on the scheduled time.
+// Poll makes a promise to claim and execute the next available task in a topic.
 func (g *Engine) Poll(ctx context.Context, topic string, p *ratus.Promise) (*ratus.Task, error) {
 	return branch(func() (*ratus.Task, error) {
 		return g.pollAtomic(ctx, topic, p)
