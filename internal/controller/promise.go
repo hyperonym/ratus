@@ -37,8 +37,8 @@ func (r *PromiseController) GetPromises(c *gin.Context) {
 	send(c, &ratus.Promises{Data: v}, err)
 }
 
-// PostPromises claims the next available task in the topic based on the scheduled time.
-// @summary  Claim the next available task in the topic based on the scheduled time
+// PostPromises makes a promise to claim and execute the next available task in a topic.
+// @summary  Make a promise to claim and execute the next available task in a topic
 // @router   /topics/{topic}/promises [post]
 // @tags     promises
 // @param    topic path string true "Name of the topic"
@@ -88,8 +88,8 @@ func (r *PromiseController) GetPromise(c *gin.Context) {
 	send(c, v, err)
 }
 
-// PostPromise claims the target task if it is in pending state.
-// @summary  Claim the target task if it is in pending state
+// PostPromise makes a promise to claim and execute a task if it is in pending state.
+// @summary  Make a promise to claim and execute a task if it is in pending state
 // @router   /topics/{topic}/promises/{id} [post]
 // @tags     promises
 // @param    topic path string true "Name of the topic"
@@ -112,8 +112,8 @@ func (r *PromiseController) PostPromise(c *gin.Context) {
 	r.collectMetrics(v)
 }
 
-// PutPromise claims the target task regardless of its current state.
-// @summary  Claim the target task regardless of its current state
+// PutPromise makes a promise to claim and execute a task regardless of its current state.
+// @summary  Make a promise to claim and execute a task regardless of its current state
 // @router   /topics/{topic}/promises/{id} [put]
 // @tags     promises
 // @param    topic path string true "Name of the topic"
