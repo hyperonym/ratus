@@ -110,7 +110,7 @@ Ratus exposes [Prometheus](https://prometheus.io) metrics via HTTP, on the `/met
 
 | Name | Type | Labels |
 | --- | --- | --- |
-| **ratus_request_duration_seconds** | histogram | `topic`, `endpoint`, `status_code` |
+| **ratus_request_duration_seconds** | histogram | `topic`, `method`, `endpoint`, `status_code` |
 | **ratus_chore_duration_seconds** | histogram | - |
 | **ratus_task_schedule_delay_seconds** | gauge | `topic`, `producer`, `consumer` |
 | **ratus_task_execution_duration_seconds** | gauge | `topic`, `producer`, `consumer` |
