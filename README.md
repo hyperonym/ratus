@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperonym/ratus)](https://goreportcard.com/report/github.com/hyperonym/ratus)
 [![Status](https://img.shields.io/badge/status-alpha-yellow)](https://github.com/hyperonym/ratus)
 
-Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use HTTP API.
+Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use [HTTP API](https://hyperonym.github.io/ratus/).
 
 The key features of Ratus are:
 
