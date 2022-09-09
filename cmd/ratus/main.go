@@ -79,7 +79,7 @@ func run() error {
 	// Create a context without timeout for the initialization phase.
 	ctx := context.Background()
 
-	// Create storage engine instance.
+	// Create a storage engine instance of the specified type.
 	var (
 		g   engine.Engine
 		err error
@@ -94,7 +94,8 @@ func run() error {
 		return err
 	}
 
-	// Open storage engine.
+	// Initialize the storage engine instance and defer the close method for
+	// graceful shutdown.
 	if err := g.Open(ctx); err != nil {
 		return err
 	}
@@ -125,7 +126,7 @@ func run() error {
 func serve(ctx context.Context, h http.Handler, c *config.ServerConfig) error {
 
 	// A port number of zero will not start the API server.
-	// Allowing the instance to be responsible for running background jobs only.
+	// This allows the instance to be responsible for running background jobs only.
 	if c.Port <= 0 {
 		return nil
 	}
@@ -138,23 +139,23 @@ func serve(ctx context.Context, h http.Handler, c *config.ServerConfig) error {
 	}
 
 	// Listen for termination signals.
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+
+	// Gracefully shut down the server when an interrupt or SIGTERM signal
+	// is received, or close the server immediately if the context has been
+	// canceled or another goroutine in the error group has return an error.
 	go func() {
-		ch := make(chan os.Signal, 1)
-		signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 		select {
-		// Gracefully shut down the server when an interrupt or SIGTERM signal
-		// is received.
 		case <-ch:
 			log.Printf("stop listening on %s\n", a)
 			s.Shutdown(context.Background())
-		// Close the server immediately if the context has been canceled or
-		// another goroutine in the error group has return an error.
 		case <-ctx.Done():
 			s.Close()
 		}
 	}()
 
-	// Return errors other than those caused by manual closing the server.
+	// Return errors other than those caused by closing the server.
 	log.Printf("start listening on %s\n", a)
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return err
@@ -166,7 +167,7 @@ func serve(ctx context.Context, h http.Handler, c *config.ServerConfig) error {
 func chore(ctx context.Context, g engine.Engine, c *config.ChoreConfig) error {
 
 	// An interval of zero will not start the background jobs.
-	// Allowing the instance to be responsible for handling requests only.
+	// This allows the instance to be responsible for handling requests only.
 	if c.Interval <= 0 {
 		return nil
 	}
@@ -198,7 +199,7 @@ func chore(ctx context.Context, g engine.Engine, c *config.ChoreConfig) error {
 			return ctx.Err()
 		case <-r.C:
 
-			// Set to the normal interval after the initial delay.
+			// Reset the timer to use the normal interval after the initial delay.
 			if !n {
 				log.Println("start running background jobs")
 				n = true
@@ -210,7 +211,6 @@ func chore(ctx context.Context, g engine.Engine, c *config.ChoreConfig) error {
 			if err := g.Chore(ctx); err != nil {
 				log.Println(err)
 			}
-
 			metrics.ChoreHistogram.Observe(time.Since(t).Seconds())
 		}
 	}
