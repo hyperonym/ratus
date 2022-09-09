@@ -21,7 +21,7 @@ type Engine interface {
 
 	// Chore recovers timed out tasks and deletes expired tasks.
 	Chore(ctx context.Context) error
-	// Poll claims the next available task in the topic based on the scheduled time.
+	// Poll makes a promise to claim and execute the next available task in a topic.
 	Poll(ctx context.Context, topic string, p *ratus.Promise) (*ratus.Task, error)
 	// Commit applies a set of updates to a task and returns the updated task.
 	Commit(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error)
@@ -58,9 +58,9 @@ type Engine interface {
 	DeletePromises(ctx context.Context, topic string) (*ratus.Deleted, error)
 	// GetPromise gets a promise by the unique ID of its target task.
 	GetPromise(ctx context.Context, id string) (*ratus.Promise, error)
-	// InsertPromise claims the target task if it is in pending state.
+	// InsertPromise makes a promise to claim and execute a task if it is in pending state.
 	InsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Task, error)
-	// UpsertPromise claims the target task regardless of its current state.
+	// UpsertPromise makes a promise to claim and execute a task regardless of its current state.
 	UpsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Task, error)
 	// DeletePromise deletes a promise by the unique ID of its target task.
 	DeletePromise(ctx context.Context, id string) (*ratus.Deleted, error)
