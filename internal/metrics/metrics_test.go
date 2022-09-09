@@ -14,7 +14,7 @@ import (
 func TestMetrics(t *testing.T) {
 	h := promhttp.Handler()
 
-	metrics.RequestHistogram.WithLabelValues("test", "/foo", "404").Observe(0.42)
+	metrics.RequestHistogram.WithLabelValues("test", "GET", "/foo", "404").Observe(0.42)
 	metrics.ChoreHistogram.Observe(0.42)
 	metrics.DelayGauge.WithLabelValues("test", "foo", "bar").Set(42)
 	metrics.ExecutionGauge.WithLabelValues("test", "foo", "bar").Set(42)
@@ -34,6 +34,9 @@ func TestMetrics(t *testing.T) {
 	r.AssertBodyContains("ratus_task_consumed_count_total")
 	r.AssertBodyContains("ratus_task_committed_count_total")
 	r.AssertBodyContains(`topic="test"`)
+	r.AssertBodyContains(`method="GET"`)
+	r.AssertBodyContains(`endpoint="/foo"`)
+	r.AssertBodyContains(`status_code="404"`)
 	r.AssertBodyContains(`producer="foo"`)
 	r.AssertBodyContains(`consumer="bar"`)
 	r.AssertBodyContains("} 42")

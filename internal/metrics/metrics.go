@@ -11,6 +11,7 @@ const (
 	labelTopic      = "topic"
 	labelProducer   = "producer"
 	labelConsumer   = "consumer"
+	labelMethod     = "method"
 	labelEndpoint   = "endpoint"
 	labelStatusCode = "status_code"
 )
@@ -21,7 +22,7 @@ var (
 		Name:    "ratus_request_duration_seconds",
 		Help:    "Request response time in seconds",
 		Buckets: []float64{0.01, 0.1, 0.5, 1, 2, 5},
-	}, []string{labelTopic, labelEndpoint, labelStatusCode})
+	}, []string{labelTopic, labelMethod, labelEndpoint, labelStatusCode})
 
 	// Periodic background jobs execution time in seconds.
 	ChoreHistogram = promauto.NewHistogram(prometheus.HistogramOpts{
