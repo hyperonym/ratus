@@ -267,7 +267,7 @@
                 "tags": [
                     "promises"
                 ],
-                "summary": "Claim the next available task in the topic based on the scheduled time",
+                "summary": "Make a promise to claim and execute the next available task in a topic",
                 "parameters": [
                     {
                         "type": "string",
@@ -402,7 +402,7 @@
                 "tags": [
                     "promises"
                 ],
-                "summary": "Claim the target task regardless of its current state",
+                "summary": "Make a promise to claim and execute a task regardless of its current state",
                 "parameters": [
                     {
                         "type": "string",
@@ -465,7 +465,7 @@
                 "tags": [
                     "promises"
                 ],
-                "summary": "Claim the target task if it is in pending state",
+                "summary": "Make a promise to claim and execute a task if it is in pending state",
                 "parameters": [
                     {
                         "type": "string",

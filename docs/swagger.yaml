@@ -418,7 +418,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ratus.Error'
-      summary: Claim the next available task in the topic based on the scheduled time
+      summary: Make a promise to claim and execute the next available task in a topic
       tags:
       - promises
   /topics/{topic}/promises/{id}:
@@ -521,7 +521,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ratus.Error'
-      summary: Claim the target task if it is in pending state
+      summary: Make a promise to claim and execute a task if it is in pending state
       tags:
       - promises
     put:
@@ -563,7 +563,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/ratus.Error'
-      summary: Claim the target task regardless of its current state
+      summary: Make a promise to claim and execute a task regardless of its current
+        state
       tags:
       - promises
   /topics/{topic}/tasks:
