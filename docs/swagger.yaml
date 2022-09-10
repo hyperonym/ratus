@@ -211,7 +211,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Get the the liveness of the instance
+      summary: Check the liveness of the instance
       tags:
       - health
   /metrics:
@@ -235,7 +235,7 @@ paths:
           description: Service Unavailable
           schema:
             $ref: '#/definitions/ratus.Error'
-      summary: Get the the readiness of the instance
+      summary: Check the readiness of the instance
       tags:
       - health
   /topics:
@@ -396,7 +396,6 @@ paths:
       - description: Wildcard promise object to be inserted
         in: body
         name: promise
-        required: true
         schema:
           $ref: '#/definitions/ratus.Promise'
       produces:
@@ -495,7 +494,6 @@ paths:
       - description: Promise object to be inserted
         in: body
         name: promise
-        required: true
         schema:
           $ref: '#/definitions/ratus.Promise'
       produces:
@@ -541,7 +539,6 @@ paths:
       - description: Promise object to be inserted or updated
         in: body
         name: promise
-        required: true
         schema:
           $ref: '#/definitions/ratus.Promise'
       produces:
@@ -770,7 +767,6 @@ paths:
       - description: Commit object to be applied
         in: body
         name: commit
-        required: true
         schema:
           $ref: '#/definitions/ratus.Commit'
       produces:

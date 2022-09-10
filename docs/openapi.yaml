@@ -22,7 +22,7 @@ paths:
     get:
       tags:
       - health
-      summary: Get the the liveness of the instance
+      summary: Check the liveness of the instance
       responses:
         200:
           description: OK
@@ -43,7 +43,7 @@ paths:
     get:
       tags:
       - health
-      summary: Get the the readiness of the instance
+      summary: Check the readiness of the instance
       responses:
         200:
           description: OK
@@ -219,7 +219,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ratus.Promise'
-        required: true
+        required: false
       responses:
         200:
           description: OK
@@ -331,7 +331,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ratus.Promise'
-        required: true
+        required: false
       responses:
         200:
           description: OK
@@ -381,7 +381,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ratus.Promise'
-        required: true
+        required: false
       responses:
         200:
           description: OK
@@ -787,7 +787,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ratus.Commit'
-        required: true
+        required: false
       responses:
         200:
           description: OK

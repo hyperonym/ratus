@@ -20,7 +20,7 @@
                 "tags": [
                     "health"
                 ],
-                "summary": "Get the the liveness of the instance",
+                "summary": "Check the liveness of the instance",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -52,7 +52,7 @@
                 "tags": [
                     "health"
                 ],
-                "summary": "Get the the readiness of the instance",
+                "summary": "Check the readiness of the instance",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -280,7 +280,6 @@
                         "description": "Wildcard promise object to be inserted",
                         "name": "promise",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/ratus.Promise"
                         }
@@ -422,7 +421,6 @@
                         "description": "Promise object to be inserted or updated",
                         "name": "promise",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/ratus.Promise"
                         }
@@ -485,7 +483,6 @@
                         "description": "Promise object to be inserted",
                         "name": "promise",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/ratus.Promise"
                         }
@@ -1001,7 +998,6 @@
                         "description": "Commit object to be applied",
                         "name": "commit",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/ratus.Commit"
                         }
