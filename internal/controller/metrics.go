@@ -9,7 +9,7 @@ import (
 	"github.com/hyperonym/ratus/internal/engine"
 )
 
-// MetricsController provides handlers for metrics-related endpoints.
+// MetricsController implements handlers for metrics-related endpoints.
 type MetricsController struct {
 	handler http.Handler
 }

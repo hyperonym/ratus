@@ -8,7 +8,7 @@ import (
 	"github.com/hyperonym/ratus/internal/engine"
 )
 
-// HealthController provides handlers for health-related endpoints.
+// HealthController implements handlers for health-related endpoints.
 type HealthController struct {
 	Engine engine.Engine
 }
@@ -18,8 +18,8 @@ func NewHealthController(g engine.Engine) *HealthController {
 	return &HealthController{g}
 }
 
-// GetLiveness gets the the liveness of the instance.
-// @summary  Get the the liveness of the instance
+// GetLiveness checks the liveness of the instance.
+// @summary  Check the liveness of the instance
 // @router   /livez [get]
 // @tags     health
 // @success  200
@@ -27,8 +27,8 @@ func (r *HealthController) GetLiveness(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-// GetReadiness gets the the readiness of the instance.
-// @summary  Get the the readiness of the instance
+// GetReadiness checks the readiness of the instance.
+// @summary  Check the readiness of the instance
 // @router   /readyz [get]
 // @tags     health
 // @success  200

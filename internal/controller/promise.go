@@ -11,7 +11,7 @@ import (
 	"github.com/hyperonym/ratus/internal/middleware"
 )
 
-// PromiseController provides handlers for promise-related endpoints.
+// PromiseController implements handlers for promise-related endpoints.
 type PromiseController struct {
 	Engine engine.Engine
 }

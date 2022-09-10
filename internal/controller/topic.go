@@ -8,7 +8,7 @@ import (
 	"github.com/hyperonym/ratus/internal/middleware"
 )
 
-// TopicController provides handlers for topic-related endpoints.
+// TopicController implements handlers for topic-related endpoints.
 type TopicController struct {
 	Engine engine.Engine
 }

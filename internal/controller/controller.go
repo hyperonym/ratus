@@ -94,7 +94,7 @@ func send(c *gin.Context, v any, err error) {
 		return
 	}
 
-	// Create error messages and collect server side errors.
+	// Create error message and collect server side error.
 	if err != nil {
 		e := ratus.NewError(err)
 		if e.Error.Code >= http.StatusInternalServerError {
@@ -104,7 +104,7 @@ func send(c *gin.Context, v any, err error) {
 		return
 	}
 
-	// Determine status code for successful responses.
+	// Determine status code for the successful response.
 	s := http.StatusOK
 	switch x := v.(type) {
 	case *ratus.Updated:

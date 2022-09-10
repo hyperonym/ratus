@@ -12,7 +12,7 @@ import (
 	"github.com/hyperonym/ratus/internal/middleware"
 )
 
-// TaskController provides handlers for task-related endpoints.
+// TaskController implements handlers for task-related endpoints.
 type TaskController struct {
 	Engine engine.Engine
 }
