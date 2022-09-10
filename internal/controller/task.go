@@ -183,7 +183,7 @@ func (r *TaskController) DeleteTask(c *gin.Context) {
 // @tags     tasks
 // @param    topic path string true "Name of the topic"
 // @param    id path string true "Unique ID of the task"
-// @param    commit body ratus.Commit true "Commit object to be applied"
+// @param    commit body ratus.Commit false "Commit object to be applied"
 // @accept   application/json
 // @produce  application/json
 // @success  200 {object} ratus.Task

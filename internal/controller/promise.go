@@ -42,7 +42,7 @@ func (r *PromiseController) GetPromises(c *gin.Context) {
 // @router   /topics/{topic}/promises [post]
 // @tags     promises
 // @param    topic path string true "Name of the topic"
-// @param    promise body ratus.Promise true "Wildcard promise object to be inserted"
+// @param    promise body ratus.Promise false "Wildcard promise object to be inserted"
 // @accept   application/json
 // @produce  application/json
 // @success  200 {object} ratus.Task
@@ -94,7 +94,7 @@ func (r *PromiseController) GetPromise(c *gin.Context) {
 // @tags     promises
 // @param    topic path string true "Name of the topic"
 // @param    id path string true "Unique ID of the target task"
-// @param    promise body ratus.Promise true "Promise object to be inserted"
+// @param    promise body ratus.Promise false "Promise object to be inserted"
 // @accept   application/json
 // @produce  application/json
 // @success  200 {object} ratus.Task
@@ -118,7 +118,7 @@ func (r *PromiseController) PostPromise(c *gin.Context) {
 // @tags     promises
 // @param    topic path string true "Name of the topic"
 // @param    id path string true "Unique ID of the target task"
-// @param    promise body ratus.Promise true "Promise object to be inserted or updated"
+// @param    promise body ratus.Promise false "Promise object to be inserted or updated"
 // @accept   application/json
 // @produce  application/json
 // @success  200 {object} ratus.Task
