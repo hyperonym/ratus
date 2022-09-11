@@ -2,11 +2,13 @@ version: "3.9"
 services:
   mongo:
     image: mongo:4.4
+    restart: unless-stopped
     ports:
       - "27017:27017"
 
   ratus:
     image: hyperonym/ratus:0.1.1
+    restart: unless-stopped
     environment:
       ENGINE: "mongodb"
       MONGODB_URI: "mongodb://mongo:27017"
@@ -19,6 +21,7 @@ services:
   # Optional Prometheus container for scraping metrics
   prometheus:
     image: prom/prometheus:v2.38.0
+    restart: unless-stopped
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.path=/prometheus"

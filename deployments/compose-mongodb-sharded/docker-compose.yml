@@ -2,6 +2,7 @@ version: "3.9"
 services:
   mongodb-sharded:
     image: bitnami/mongodb-sharded:4.4
+    restart: unless-stopped
     environment:
       MONGODB_ADVERTISED_HOSTNAME: "mongodb-sharded"
       MONGODB_SHARDING_MODE: "mongos"
@@ -14,6 +15,7 @@ services:
 
   mongodb-shard0:
     image: bitnami/mongodb-sharded:4.4
+    restart: unless-stopped
     environment:
       MONGODB_ADVERTISED_HOSTNAME: "mongodb-shard0"
       MONGODB_SHARDING_MODE: "shardsvr"
@@ -25,6 +27,7 @@ services:
 
   mongodb-cfg:
     image: bitnami/mongodb-sharded:4.4
+    restart: unless-stopped
     environment:
       MONGODB_ADVERTISED_HOSTNAME: "mongodb-cfg"
       MONGODB_SHARDING_MODE: "configsvr"
@@ -35,6 +38,7 @@ services:
 
   ratus:
     image: hyperonym/ratus:0.1.1
+    restart: unless-stopped
     environment:
       ENGINE: "mongodb"
       MONGODB_URI: "mongodb://root:password123@mongodb-sharded:27017"
