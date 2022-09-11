@@ -5,7 +5,7 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/hyperonym/ratus.svg)](https://pkg.go.dev/github.com/hyperonym/ratus)
 [![Swagger Validator](https://img.shields.io/swagger/valid/3.0?specUrl=https%3A%2F%2Fraw.githubusercontent.com%2Fhyperonym%2Fratus%2Fmaster%2Fdocs%2Fswagger.json)](https://hyperonym.github.io/ratus/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperonym/ratus)](https://goreportcard.com/report/github.com/hyperonym/ratus)
-[![Status](https://img.shields.io/badge/status-alpha-yellow)](https://github.com/hyperonym/ratus)
+[![Status](https://img.shields.io/badge/status-beta-blue)](https://github.com/hyperonym/ratus)
 
 Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use [HTTP API](https://hyperonym.github.io/ratus/).
 
