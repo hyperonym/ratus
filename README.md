@@ -21,6 +21,23 @@ The key features of Ratus are:
 * Pluggable storage engine architecture.
 * Prometheus integration for observability.
 
+## Quick Start
+
+### Installation
+
+Ratus offers a variety of installation options:
+
+* Docker images are available on [Docker Hub](https://hub.docker.com/r/hyperonym/ratus/tags) and [GitHub Packages](https://github.com/orgs/hyperonym/packages?repo_name=ratus).
+* Docker Compose examples can be found in the [deployments](https://github.com/hyperonym/ratus/tree/master/deployments) directory.
+* Pre-built binaries for all major platforms are available on the [GitHub releases](https://github.com/hyperonym/ratus/releases) page.
+* Build from source with `go install github.com/hyperonym/ratus/cmd/ratus@latest`.
+
+Depending on the [storage engine](https://github.com/hyperonym/ratus/blob/master/README.md#engines) you choose, you may also need to deploy the corresponding database or broker. Using the default `mongodb` engine as an example, assuming the database is already running locally, then start Ratus with:
+
+```bash
+$ ratus --port 8000 --mongodb-uri mongodb://127.0.0.1:27017
+```
+
 ## Concepts
 
 ### Data Model
