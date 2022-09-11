@@ -106,7 +106,7 @@ func (r *PromiseController) PostPromise(c *gin.Context) {
 	p := c.MustGet(middleware.ParamPromise).(*ratus.Promise)
 	v, err := r.Engine.InsertPromise(c.Request.Context(), p)
 	if err == ratus.ErrConflict {
-		err = fmt.Errorf("%w: a promise for the same task already exists", err)
+		err = fmt.Errorf("%w: the target task is not in pending state", err)
 	}
 	send(c, v, err)
 	r.collectMetrics(v)
