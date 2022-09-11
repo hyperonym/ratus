@@ -38,6 +38,82 @@ Depending on the [storage engine](https://github.com/hyperonym/ratus/blob/master
 $ ratus --port 8000 --mongodb-uri mongodb://127.0.0.1:27017
 ```
 
+### Basic Usage
+
+Concepts introduced by Ratus will be **bolded** below, see [Concepts](https://github.com/hyperonym/ratus/blob/master/README.md#concepts) (*a.k.a cheat sheet*) to learn more.
+
+#### cURL
+
+A producer creates a new **task** and pushes it to the `example` **topic**:
+```bash
+$ curl -X POST -d '{"payload": "hello world"}' "http://127.0.0.1:8000/v1/topics/example/tasks/1"
+```
+<details>
+<summary>Example response</summary>
+
+```json
+{
+	"created": 1,
+	"updated": 0
+}
+```
+</details>
+
+A consumer can then make a **promise** to claim and execute the next task in the `example` topic:
+
+```bash
+$ curl -X POST "http://127.0.0.1:8000/v1/topics/example/promises?timeout=30s"
+```
+<details>
+<summary>Example response</summary>
+
+```json
+{
+	"_id": "1",
+	"topic": "example",
+	"state": 1,
+	"nonce": "e4SN6Si1nOnE53ou",
+	"produced": "2022-07-29T20:00:00.0Z",
+	"scheduled": "2022-07-29T20:00:00.0Z",
+	"consumed": "2022-07-29T20:00:10.0Z",
+	"deadline": "2022-07-29T20:00:40.0Z",
+	"payload": "hello world"
+}
+```
+</details>
+
+After executing the task, remember to acknowledge Ratus that the task is `completed` using a **commit**:
+
+```bash
+$ curl -X PATCH "http://127.0.0.1:8000/v1/topics/example/tasks/1"
+```
+<details>
+<summary>Example response</summary>
+
+```json
+{
+	"_id": "1",
+	"topic": "example",
+	"state": 2,
+	"nonce": "",
+	"produced": "2022-07-29T20:00:00.0Z",
+	"scheduled": "2022-07-29T20:00:00.0Z",
+	"consumed": "2022-07-29T20:00:10.0Z",
+	"deadline": "2022-07-29T20:00:40.0Z",
+	"payload": "hello world"
+}
+```
+</details>
+
+If a commit is not received before the promised deadline, the state of the task is will be set back to `pending`, which in turn allows consumers to try to execute it again.
+
+#### Go Client
+
+Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/ratus) that not only encapsulates all API calls, but also provides idiomatic poll-execute-commit workflows. The [examples](https://github.com/hyperonym/ratus/tree/master/examples) directory contains ready-to-run examples for using the library:
+
+* The [hello world](https://github.com/hyperonym/ratus/blob/master/examples/hello-world/main.go) example demonstrated the basic usage of the client library. 
+* The [crawl frontier](https://github.com/hyperonym/ratus/blob/master/examples/crawl-frontier/main.go) example implemented a simple [URL frontier](https://en.wikipedia.org/wiki/Crawl_frontier) for distributed web crawlers. It utilized advanced features like concurrent subscribers and time-based task scheduling.
+
 ## Concepts
 
 ### Data Model
