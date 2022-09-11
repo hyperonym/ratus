@@ -3,6 +3,9 @@ services:
   mongodb-sharded:
     image: bitnami/mongodb-sharded:4.4
     restart: unless-stopped
+    depends_on:
+      - mongodb-shard0
+      - mongodb-cfg
     environment:
       MONGODB_ADVERTISED_HOSTNAME: "mongodb-sharded"
       MONGODB_SHARDING_MODE: "mongos"
@@ -39,6 +42,8 @@ services:
   ratus:
     image: hyperonym/ratus:0.1.1
     restart: unless-stopped
+    depends_on:
+      - mongodb-sharded
     environment:
       ENGINE: "mongodb"
       MONGODB_URI: "mongodb://root:password123@mongodb-sharded:27017"
