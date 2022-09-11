@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/hyperonym/ratus/internal/engine"
@@ -16,7 +17,10 @@ type MetricsController struct {
 
 // NewMetricsController creates a new MetricsController.
 func NewMetricsController(g engine.Engine) *MetricsController {
-	return &MetricsController{promhttp.Handler()}
+	o := promhttp.HandlerOpts{DisableCompression: true}
+	h := promhttp.HandlerFor(prometheus.DefaultGatherer, o)
+	h = promhttp.InstrumentMetricHandler(prometheus.DefaultRegisterer, h)
+	return &MetricsController{h}
 }
 
 // GetMetrics gets Prometheus metrics of the instance.
