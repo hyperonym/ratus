@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  mongo:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+
+  ratus:
+    image: hyperonym/ratus:0.1.0
+    environment:
+      ENGINE: "mongodb"
+      MONGODB_URI: "mongodb://mongo:27017"
+      MONGODB_DATABASE: "ratus"
+      MONGODB_COLLECTION: "tasks"
+      MONGODB_RETENTION_PERIOD: "72h"
+    ports:
+      - "8000:80"
+
+  # Optional Prometheus container for scraping metrics
+  prometheus:
+    image: prom/prometheus:v2.38.0
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+      - "--storage.tsdb.retention.time=30d"
+    volumes:
+      - type: bind
+        source: ./prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
