@@ -34,7 +34,7 @@ services:
       MONGODB_REPLICA_SET_NAME: "cfgreplicaset"
 
   ratus:
-    image: hyperonym/ratus:0.1.0
+    image: hyperonym/ratus:0.1.1
     environment:
       ENGINE: "mongodb"
       MONGODB_URI: "mongodb://root:password123@mongodb-sharded:27017"

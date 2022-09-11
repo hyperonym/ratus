@@ -6,7 +6,7 @@ services:
       - "27017:27017"
 
   ratus:
-    image: hyperonym/ratus:0.1.0
+    image: hyperonym/ratus:0.1.1
     environment:
       ENGINE: "mongodb"
       MONGODB_URI: "mongodb://mongo:27017"
