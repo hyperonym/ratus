@@ -51,6 +51,16 @@ func (ctx *Context) Commit() error {
 	return nil
 }
 
+// Reset discards all uncommitted updates.
+func (ctx *Context) Reset() *Context {
+	s := TaskStateCompleted
+	ctx.commit = Commit{State: &s}
+	if ctx.Task != nil {
+		ctx.commit.Nonce = ctx.Task.Nonce
+	}
+	return ctx
+}
+
 // SetNonce sets the value for the Nonce field of the commit.
 func (ctx *Context) SetNonce(nonce string) *Context {
 	ctx.commit.Nonce = nonce
