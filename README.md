@@ -28,7 +28,7 @@ The key features of Ratus are:
 Ratus offers a variety of installation options:
 
 * Docker images are available on [Docker Hub](https://hub.docker.com/r/hyperonym/ratus/tags) and [GitHub Packages](https://github.com/orgs/hyperonym/packages?repo_name=ratus).
-* Docker Compose examples can be found in the [deployments](https://github.com/hyperonym/ratus/tree/master/deployments) directory.
+* Kubernetes and Docker Compose examples can be found in the [deployments](https://github.com/hyperonym/ratus/tree/master/deployments) directory.
 * Pre-built binaries for all major platforms are available on the [GitHub releases](https://github.com/hyperonym/ratus/releases) page.
 * Build from source with `go install github.com/hyperonym/ratus/cmd/ratus@latest`.
 
