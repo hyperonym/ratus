@@ -90,9 +90,6 @@ func (v *V1) Mount(r *gin.RouterGroup) {
 }
 
 func send(c *gin.Context, v any, err error) {
-	if c.IsAborted() {
-		return
-	}
 
 	// Create error message and collect server side error.
 	if err != nil {
