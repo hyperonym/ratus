@@ -13,7 +13,6 @@ const maxIdleConnsPerHost = 1024
 type transport struct {
 	scheme       string
 	host         string
-	user         *url.Userinfo
 	headers      map[string]string
 	roundTripper http.RoundTripper
 }
@@ -38,7 +37,6 @@ func newTransport(origin string, headers map[string]string) (*transport, error) 
 	return &transport{
 		scheme:       u.Scheme,
 		host:         u.Host,
-		user:         u.User,
 		headers:      headers,
 		roundTripper: t,
 	}, nil
@@ -53,9 +51,6 @@ func (t *transport) RoundTrip(r *http.Request) (*http.Response, error) {
 	}
 	if t.host != "" {
 		r.URL.Host = t.host
-	}
-	if t.user != nil {
-		r.URL.User = t.user
 	}
 
 	// Set common header fields.
