@@ -708,7 +708,7 @@ func Test(t *testing.T, g Engine) {
 		})
 
 		t.Run("commit", func(t *testing.T) {
-			k := nonce.Generate(16)
+			k := nonce.Generate(ratus.NonceLength)
 			s := ratus.TaskStateArchived
 			m := &ratus.Commit{
 				Nonce:     k,
