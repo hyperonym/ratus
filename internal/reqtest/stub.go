@@ -33,7 +33,6 @@ func (s *StubGroup) Mount(r *gin.RouterGroup) {
 
 // NewHandler creates a handler from an endpoint group for testing.
 func NewHandler(g router.Group) http.Handler {
-	gin.SetMode(gin.ReleaseMode)
 	r := gin.New()
 	for _, p := range g.Prefixes() {
 		g.Mount(r.Group(p))
