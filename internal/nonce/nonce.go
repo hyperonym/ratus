@@ -30,7 +30,7 @@ const (
 // The generate function is safe for concurrent use by multiple goroutines.
 // The original algorithm is taken from: https://stackoverflow.com/a/31832326
 func Generate(n int) string {
-	sb := strings.Builder{}
+	var sb strings.Builder
 	sb.Grow(n)
 	for i, cache, remain := n-1, rand.Int63(), charIdxMax; i >= 0; {
 		if remain == 0 {
