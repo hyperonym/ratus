@@ -50,11 +50,10 @@ func (g *Engine) Chore(ctx context.Context) error {
 // Poll makes a promise to claim and execute the next available task in a topic.
 func (g *Engine) Poll(ctx context.Context, topic string, p *ratus.Promise) (*ratus.Task, error) {
 	return &ratus.Task{
-		ID:        p.ID,
+		ID:        cannedID,
 		Topic:     topic,
 		State:     ratus.TaskStateActive,
 		Nonce:     nonce.Generate(ratus.NonceLength),
-		Consumer:  p.Consumer,
 		Produced:  &cannedDate,
 		Scheduled: &cannedDate,
 		Consumed:  &cannedDate,
@@ -67,7 +66,7 @@ func (g *Engine) Poll(ctx context.Context, topic string, p *ratus.Promise) (*rat
 func (g *Engine) Commit(ctx context.Context, id string, m *ratus.Commit) (*ratus.Task, error) {
 	return &ratus.Task{
 		ID:        id,
-		Topic:     m.Topic,
+		Topic:     cannedTopic,
 		State:     ratus.TaskStateCompleted,
 		Produced:  &cannedDate,
 		Scheduled: &cannedDate,
