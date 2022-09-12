@@ -135,7 +135,7 @@ func TestController(t *testing.T) {
 
 				t.Run("post", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Task
 					req := reqtest.NewRequestJSON(http.MethodPost, "/topics/topic/tasks/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusCreated)
@@ -146,7 +146,7 @@ func TestController(t *testing.T) {
 
 				t.Run("put", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Task
 					req := reqtest.NewRequestJSON(http.MethodPut, "/topics/topic/tasks/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusOK)
@@ -190,7 +190,7 @@ func TestController(t *testing.T) {
 
 				t.Run("post", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Promise{}
+					var v ratus.Promise
 					req := reqtest.NewRequestJSON(http.MethodPost, "/topics/topic/promises", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusOK)
@@ -232,7 +232,7 @@ func TestController(t *testing.T) {
 
 				t.Run("post", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Promise
 					req := reqtest.NewRequestJSON(http.MethodPost, "/topics/topic/promises/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusOK)
@@ -242,7 +242,7 @@ func TestController(t *testing.T) {
 
 				t.Run("put", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Promise
 					req := reqtest.NewRequestJSON(http.MethodPut, "/topics/topic/promises/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusOK)
@@ -308,7 +308,7 @@ func TestController(t *testing.T) {
 
 				t.Run("post", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Task
 					req := reqtest.NewRequestJSON(http.MethodPost, "/topics/topic/tasks/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusConflict)
@@ -318,7 +318,7 @@ func TestController(t *testing.T) {
 
 				t.Run("patch", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Commit{}
+					var v ratus.Commit
 					req := reqtest.NewRequestJSON(http.MethodPatch, "/topics/topic/tasks/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusConflict)
@@ -332,7 +332,7 @@ func TestController(t *testing.T) {
 
 				t.Run("post", func(t *testing.T) {
 					t.Parallel()
-					v := ratus.Task{}
+					var v ratus.Promise
 					req := reqtest.NewRequestJSON(http.MethodPost, "/topics/topic/promises/id", &v)
 					r := reqtest.Record(t, h, req)
 					r.AssertStatusCode(http.StatusConflict)
