@@ -187,9 +187,8 @@ func (c *Client) Poll(ctx context.Context, topic string, p *Promise) (*Context, 
 	// use the time difference between the task's deadline and consumed time as
 	// the timeout duration for the context.
 	var n context.CancelFunc
-	x := context.Background()
 	if t.Consumed != nil && t.Deadline != nil {
-		x, n = context.WithTimeout(context.Background(), t.Deadline.Sub(*t.Consumed))
+		ctx, n = context.WithTimeout(ctx, t.Deadline.Sub(*t.Consumed))
 	}
 
 	// Create commit instance with the default target state set as "completed".
@@ -201,7 +200,7 @@ func (c *Client) Poll(ctx context.Context, topic string, p *Promise) (*Context, 
 	}
 
 	return &Context{
-		Context: x,
+		Context: ctx,
 		cancel:  n,
 		commit:  m,
 		client:  c,
