@@ -45,14 +45,14 @@ func Test(t *testing.T, g Engine) {
 
 		t.Run("poll", func(t *testing.T) {
 			t.Parallel()
-			if _, err := g.Poll(ctx, "test", &ratus.Promise{ID: "foo"}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.Poll(ctx, "test", &ratus.Promise{ID: "foo"}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 		})
 
 		t.Run("commit", func(t *testing.T) {
 			t.Parallel()
-			if _, err := g.Commit(ctx, "foo", &ratus.Commit{Payload: "hello"}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.Commit(ctx, "foo", &ratus.Commit{Payload: "hello"}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 		})
@@ -66,7 +66,7 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 0 {
 				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
 			}
-			if _, err := g.GetTopic(ctx, "test"); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.GetTopic(ctx, "test"); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			d, err := g.DeleteTopic(ctx, "test")
@@ -94,7 +94,7 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 0 {
 				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
 			}
-			if _, err := g.GetTask(ctx, "foo"); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.GetTask(ctx, "foo"); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			d, err := g.DeleteTask(ctx, "foo")
@@ -122,7 +122,7 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 0 {
 				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
 			}
-			if _, err := g.GetPromise(ctx, "foo"); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.GetPromise(ctx, "foo"); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			d, err := g.DeletePromise(ctx, "foo")
@@ -189,7 +189,7 @@ func Test(t *testing.T, g Engine) {
 				Produced:  &n,
 				Scheduled: &n,
 				Payload:   "xxx",
-			}); err == nil || !errors.Is(err, ratus.ErrConflict) {
+			}); !errors.Is(err, ratus.ErrConflict) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 			}
 			v, err := g.GetTask(ctx, "1")
@@ -222,13 +222,13 @@ func Test(t *testing.T, g Engine) {
 			if _, err := g.InsertPromise(ctx, &ratus.Promise{
 				ID:       "1",
 				Deadline: &n,
-			}); err == nil || !errors.Is(err, ratus.ErrConflict) {
+			}); !errors.Is(err, ratus.ErrConflict) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 			}
 			if _, err := g.InsertPromise(ctx, &ratus.Promise{
 				ID:       "xxx",
 				Deadline: &n,
-			}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			p, err := g.GetPromise(ctx, "1")
@@ -251,7 +251,7 @@ func Test(t *testing.T, g Engine) {
 			if _, err := g.UpsertPromise(ctx, &ratus.Promise{
 				ID:       "xxx",
 				Deadline: &n,
-			}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			p, err = g.GetPromise(ctx, "2")
@@ -267,7 +267,7 @@ func Test(t *testing.T, g Engine) {
 			if err := g.Chore(ctx); err != nil {
 				t.Error(err)
 			}
-			if _, err := g.GetPromise(ctx, "1"); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.GetPromise(ctx, "1"); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 		})
@@ -289,10 +289,10 @@ func Test(t *testing.T, g Engine) {
 		})
 
 		t.Run("commit", func(t *testing.T) {
-			if _, err := g.Commit(ctx, "1", &ratus.Commit{Nonce: "xxx"}); err == nil || !errors.Is(err, ratus.ErrConflict) {
+			if _, err := g.Commit(ctx, "1", &ratus.Commit{Nonce: "xxx"}); !errors.Is(err, ratus.ErrConflict) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 			}
-			if _, err := g.Commit(ctx, "xxx", &ratus.Commit{Nonce: "xxx"}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.Commit(ctx, "xxx", &ratus.Commit{Nonce: "xxx"}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			v, err := g.GetTask(ctx, "1")
@@ -374,7 +374,7 @@ func Test(t *testing.T, g Engine) {
 						return err
 					})
 				}
-				if err := eg.Wait(); err == nil || !errors.Is(err, ratus.ErrConflict) {
+				if err := eg.Wait(); !errors.Is(err, ratus.ErrConflict) {
 					t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 				}
 				v, err := g.ListTasks(ctx, "test", 10, 0)
@@ -547,7 +547,7 @@ func Test(t *testing.T, g Engine) {
 						return err
 					})
 				}
-				if err := eg.Wait(); err == nil || !errors.Is(err, ratus.ErrConflict) {
+				if err := eg.Wait(); !errors.Is(err, ratus.ErrConflict) {
 					t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 				}
 				p, err := g.GetPromise(ctx, "1")
@@ -678,7 +678,7 @@ func Test(t *testing.T, g Engine) {
 					return err
 				})
 			}
-			if err := eg.Wait(); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if err := eg.Wait(); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			v, err := g.ListPromises(ctx, "test", 10, 0)
@@ -735,7 +735,7 @@ func Test(t *testing.T, g Engine) {
 					return err
 				})
 			}
-			if err := eg.Wait(); err == nil || !errors.Is(err, ratus.ErrConflict) {
+			if err := eg.Wait(); !errors.Is(err, ratus.ErrConflict) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrConflict, err)
 			}
 			v, err := g.GetTask(ctx, "1")
@@ -802,7 +802,7 @@ func Test(t *testing.T, g Engine) {
 			if v.ID != "1" {
 				t.Errorf("incorrect task order, expected %q, got %q", "1", v.ID)
 			}
-			if _, err := g.Poll(ctx, "test", &ratus.Promise{Deadline: &n1}); err == nil || !errors.Is(err, ratus.ErrNotFound) {
+			if _, err := g.Poll(ctx, "test", &ratus.Promise{Deadline: &n1}); !errors.Is(err, ratus.ErrNotFound) {
 				t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrNotFound, err)
 			}
 			time.Sleep(1 * time.Second)
