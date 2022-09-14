@@ -1,4 +1,4 @@
-name: Go
+name: MongoDB
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.go-version }}
+    name: ${{ matrix.mongodb-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['^1.19']
+        mongodb-version: ['4.4', '5.0', '6.0']
     defaults:
       run:
         working-directory: main
@@ -20,12 +20,14 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ^1.19
+      - name: Set up MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           path: main
       - name: Test packages
-        run: make test-short
-      - name: Build artifacts
-        run: make build
+        run: make test
