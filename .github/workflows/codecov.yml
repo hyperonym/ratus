@@ -14,18 +14,19 @@ jobs:
       run:
         working-directory: main
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: ^1.19
-      - name: Set up MongoDB
-        uses: supercharge/mongodb-github-action@1.8.0
-        with:
-          mongodb-version: '4.4'
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           path: main
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'main/go.mod'
+          check-latest: true
+      - name: Set up MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+        with:
+          mongodb-version: '4.4'
       - name: Run coverage
         run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
       - name: Upload coverage to Codecov
