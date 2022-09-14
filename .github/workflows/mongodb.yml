@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version-file: 'main/go.mod'
+          check-latest: true
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.8.0
         with:
