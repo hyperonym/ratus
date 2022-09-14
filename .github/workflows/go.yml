@@ -15,7 +15,7 @@ jobs:
         working-directory: main
     strategy:
       matrix:
-        mongodb-version: ['4.2', '4.4', '5.0', '6.0']
+        mongodb-version: ['4.4', '5.0', '6.0']
     steps:
       - name: Set up Go
         uses: actions/setup-go@v3
