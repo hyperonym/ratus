@@ -17,6 +17,10 @@ jobs:
       run:
         working-directory: main
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: main
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -25,9 +29,5 @@ jobs:
         uses: supercharge/mongodb-github-action@1.8.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          path: main
       - name: Test packages
         run: make test
