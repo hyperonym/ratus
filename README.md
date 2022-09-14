@@ -7,7 +7,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperonym/ratus)](https://goreportcard.com/report/github.com/hyperonym/ratus)
 [![Status](https://img.shields.io/badge/status-beta-blue)](https://github.com/hyperonym/ratus)
 
-Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to [REST principles](https://en.wikipedia.org/wiki/Representational_state_transfer) and provides an easy-to-use [HTTP API](https://hyperonym.github.io/ratus/).
+Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to REST principles and provides an easy-to-use [HTTP API](https://hyperonym.github.io/ratus/).
 
 The key features of Ratus are:
 
@@ -111,7 +111,7 @@ If a commit is not received before the promised deadline, the state of the task 
 
 #### Go Client
 
-Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/ratus) that not only encapsulates all API calls, but also provides idiomatic poll-execute-commit workflows. The [examples](https://github.com/hyperonym/ratus/tree/master/examples) directory contains ready-to-run examples for using the library:
+Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/ratus) that not only encapsulates all API calls, but also provides idiomatic poll-execute-commit workflows like [Client.Poll](https://pkg.go.dev/github.com/hyperonym/ratus#Client.Poll) and [Client.Subscribe](https://pkg.go.dev/github.com/hyperonym/ratus#Client.Subscribe). The [examples](https://github.com/hyperonym/ratus/tree/master/examples) directory contains ready-to-run examples for using the library:
 
 * The [hello world](https://github.com/hyperonym/ratus/blob/master/examples/hello-world/main.go) example demonstrated the basic usage of the client library. 
 * The [crawl frontier](https://github.com/hyperonym/ratus/blob/master/examples/crawl-frontier/main.go) example implemented a simple [URL frontier](https://en.wikipedia.org/wiki/Crawl_frontier) for distributed web crawlers. It utilized advanced features like concurrent subscribers and time-based task scheduling.
