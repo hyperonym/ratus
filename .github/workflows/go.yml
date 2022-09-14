@@ -7,8 +7,27 @@ on:
     branches: [master]
 
 jobs:
-  test:
-    name: test
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.19
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: main
+      - name: Test packages
+        run: make test-short
+      - name: Build artifacts
+        run: make build
+  mongodb:
+    name: test (mongodb ${{ matrix.mongodb-version }})
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -31,5 +50,3 @@ jobs:
           path: main
       - name: Test packages
         run: make test
-      - name: Build artifacts
-        run: make build
