@@ -21,6 +21,8 @@ The key features of Ratus are:
 * Pluggable storage engine architecture.
 * Prometheus integration for observability.
 
+![Terminal screenshot](https://github.com/hyperonym/ratus/blob/master/docs/assets/terminal.png?raw=true)
+
 ## Quick Start
 
 ### Installation
