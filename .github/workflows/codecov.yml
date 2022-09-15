@@ -28,7 +28,7 @@ jobs:
         with:
           mongodb-version: '4.4'
       - name: Run coverage
-        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+        run: make test-coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
