@@ -39,6 +39,7 @@ changelog:
 .PHONY: clean
 clean:
 	@go clean
+	@rm -f coverage.out
 	@rm -rf bin/ release/
 
 .PHONY: docker-%
@@ -76,6 +77,10 @@ run:
 .PHONY: test
 test:
 	@go test -timeout 5m -v ./...
+
+.PHONY: test-coverage
+test-coverage:
+	@go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
 .PHONY: test-engine-%
 test-engine-%:
