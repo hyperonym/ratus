@@ -77,6 +77,10 @@ run:
 test:
 	@go test -timeout 5m -v ./...
 
+.PHONY: test-engine-%
+test-engine-%:
+	@go test -timeout 5m -v ./internal/engine/$*
+
 .PHONY: test-short
 test-short:
 	@go test -short -v ./...
