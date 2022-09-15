@@ -31,4 +31,4 @@ jobs:
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
       - name: Test packages
-        run: make test
+        run: make test-engine-mongodb
