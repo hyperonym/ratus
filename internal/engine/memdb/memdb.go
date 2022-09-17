@@ -173,3 +173,23 @@ func updateOpsConsume(v *ratus.Task, p *ratus.Promise, t time.Time) *ratus.Task 
 	u.Deadline = p.Deadline
 	return &u
 }
+
+// updateOpsCommit creates a new copy of the task with the following updates:
+// apply all updates specified in the given commit.
+func updateOpsCommit(v *ratus.Task, m *ratus.Commit) *ratus.Task {
+	u := *v
+	u.Nonce = ""
+	if m.Topic != "" {
+		u.Topic = m.Topic
+	}
+	if m.State != nil {
+		u.State = *m.State
+	}
+	if m.Scheduled != nil {
+		u.Scheduled = m.Scheduled
+	}
+	if m.Payload != nil {
+		u.Payload = m.Payload
+	}
+	return &u
+}
