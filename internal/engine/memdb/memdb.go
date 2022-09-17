@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/go-memdb"
 
 	"github.com/hyperonym/ratus"
+	"github.com/hyperonym/ratus/internal/nonce"
 )
 
 // Name constants for tables.
@@ -149,4 +150,26 @@ func (g *Engine) Ready(ctx context.Context) error {
 		return ratus.ErrServiceUnavailable
 	}
 	return nil
+}
+
+// updateOpsRecover creates a new copy of the task with the following updates:
+// set the state of the task back to "pending" and clear the nonce field to
+// invalidate subsequent commits.
+func updateOpsRecover(v *ratus.Task) *ratus.Task {
+	u := *v
+	u.State = ratus.TaskStatePending
+	u.Nonce = ""
+	return &u
+}
+
+// updateOpsConsume creates a new copy of the task with the following updates:
+// set the task to the "active" state and populate fields with data from the promise.
+func updateOpsConsume(v *ratus.Task, p *ratus.Promise, t time.Time) *ratus.Task {
+	u := *v
+	u.State = ratus.TaskStateActive
+	u.Nonce = nonce.Generate(ratus.NonceLength)
+	u.Consumer = p.Consumer
+	u.Consumed = &t
+	u.Deadline = p.Deadline
+	return &u
 }
