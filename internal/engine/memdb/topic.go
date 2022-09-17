@@ -77,6 +77,9 @@ func (g *Engine) GetTopic(ctx context.Context, topic string) (*ratus.Topic, erro
 	// Currently the information of a topic only contains the name and count.
 	// Information such as progress and states could be added in the future.
 	txn.Commit()
+	if n == 0 {
+		return nil, ratus.ErrNotFound
+	}
 	return &ratus.Topic{
 		Name:  topic,
 		Count: n,
