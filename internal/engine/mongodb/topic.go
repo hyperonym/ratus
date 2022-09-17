@@ -23,7 +23,7 @@ func (g *Engine) ListTopics(ctx context.Context, limit, offset int) ([]*ratus.To
 		bson.D{{Key: "$skip", Value: offset}},
 		bson.D{{Key: "$limit", Value: limit}},
 	}
-	o := options.Aggregate().SetHint(hintTopic)
+	o := options.Aggregate().SetHint(indexTopic)
 	r, err := g.collection.Aggregate(ctx, p, o)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (g *Engine) ListTopics(ctx context.Context, limit, offset int) ([]*ratus.To
 // DeleteTopics deletes all topics and tasks.
 func (g *Engine) DeleteTopics(ctx context.Context) (*ratus.Deleted, error) {
 	f := bson.D{}
-	o := options.Delete().SetHint(hintID)
+	o := options.Delete().SetHint(indexID)
 	r, err := g.collection.DeleteMany(ctx, f, o)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (g *Engine) GetTopic(ctx context.Context, topic string) (*ratus.Topic, erro
 
 	// Get the number of tasks under the topic.
 	f := bson.D{{Key: keyTopic, Value: topic}}
-	o := options.Count().SetHint(hintTopic)
+	o := options.Count().SetHint(indexTopic)
 	n, err := g.collection.CountDocuments(ctx, f, o)
 
 	// Topics are not created manually, their existence depends entirely on
@@ -82,7 +82,7 @@ func (g *Engine) GetTopic(ctx context.Context, topic string) (*ratus.Topic, erro
 // DeleteTopic deletes a topic and its tasks.
 func (g *Engine) DeleteTopic(ctx context.Context, topic string) (*ratus.Deleted, error) {
 	f := bson.D{{Key: keyTopic, Value: topic}}
-	o := options.Delete().SetHint(hintTopic)
+	o := options.Delete().SetHint(indexTopic)
 	r, err := g.collection.DeleteMany(ctx, f, o)
 	if err != nil {
 		return nil, err

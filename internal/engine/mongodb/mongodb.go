@@ -31,12 +31,12 @@ const (
 
 // Name constants for index creation and selection.
 const (
-	hintID                    = "_id_"
-	hintTopic                 = "topic_hashed"
-	hintPendingTopicScheduled = "topic_1_scheduled_1"
-	hintActiveDeadline        = "deadline_1"
-	hintActiveTopic           = "topic_1"
-	hintCompletedConsumed     = "consumed_1"
+	indexID                    = "_id_"
+	indexTopic                 = "topic_hashed"
+	indexPendingTopicScheduled = "topic_1_scheduled_1"
+	indexActiveDeadline        = "deadline_1"
+	indexActiveTopic           = "topic_1"
+	indexCompletedConsumed     = "consumed_1"
 )
 
 // Partial filter expressions for index creation.
@@ -185,19 +185,19 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 		_, err := v.CreateMany(ctx, []mongo.IndexModel{
 			{
 				Keys:    bson.D{{Key: keyTopic, Value: "hashed"}},
-				Options: options.Index().SetName(hintTopic),
+				Options: options.Index().SetName(indexTopic),
 			},
 			{
 				Keys:    bson.D{{Key: keyTopic, Value: 1}, {Key: keyScheduled, Value: 1}},
-				Options: options.Index().SetName(hintPendingTopicScheduled).SetPartialFilterExpression(filterStatePending),
+				Options: options.Index().SetName(indexPendingTopicScheduled).SetPartialFilterExpression(filterStatePending),
 			},
 			{
 				Keys:    bson.D{{Key: keyDeadline, Value: 1}},
-				Options: options.Index().SetName(hintActiveDeadline).SetPartialFilterExpression(filterStateActive),
+				Options: options.Index().SetName(indexActiveDeadline).SetPartialFilterExpression(filterStateActive),
 			},
 			{
 				Keys:    bson.D{{Key: keyTopic, Value: 1}},
-				Options: options.Index().SetName(hintActiveTopic).SetPartialFilterExpression(filterStateActive),
+				Options: options.Index().SetName(indexActiveTopic).SetPartialFilterExpression(filterStateActive),
 			},
 		})
 		return err
@@ -213,7 +213,7 @@ func (g *Engine) createIndexes(ctx context.Context) error {
 		// specified TTL value does not match the value in the existing index.
 		_, err := v.CreateOne(ctx, mongo.IndexModel{
 			Keys:    k,
-			Options: options.Index().SetName(hintCompletedConsumed).SetPartialFilterExpression(filterStateCompleted).SetExpireAfterSeconds(s),
+			Options: options.Index().SetName(indexCompletedConsumed).SetPartialFilterExpression(filterStateCompleted).SetExpireAfterSeconds(s),
 		})
 		if err == nil {
 			return nil
