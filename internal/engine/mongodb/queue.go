@@ -23,7 +23,7 @@ func (g *Engine) Chore(ctx context.Context) error {
 	}
 
 	// Recover tasks that have timed out.
-	o := options.Update().SetUpsert(false).SetHint(hintActiveDeadline)
+	o := options.Update().SetUpsert(false).SetHint(indexActiveDeadline)
 	if _, err := g.collection.UpdateMany(ctx, f, updateOpsRecover(), o); err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (g *Engine) pollAtomic(ctx context.Context, topic string, p *ratus.Promise)
 	f := queryOpsPoll(topic, t)
 	u := updateOpsConsume(p, t)
 	s := bson.D{{Key: keyScheduled, Value: 1}}
-	o := options.FindOneAndUpdate().SetUpsert(false).SetSort(s).SetReturnDocument(options.After).SetHint(hintPendingTopicScheduled)
+	o := options.FindOneAndUpdate().SetUpsert(false).SetSort(s).SetReturnDocument(options.After).SetHint(indexPendingTopicScheduled)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -71,7 +71,7 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 	t := time.Now()
 	f := queryOpsPoll(topic, t)
 	s := bson.D{{Key: keyScheduled, Value: 1}}
-	c, err := g.peek(ctx, f, s, hintPendingTopicScheduled)
+	c, err := g.peek(ctx, f, s, indexPendingTopicScheduled)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -86,7 +86,7 @@ func (g *Engine) pollOptimistic(ctx context.Context, topic string, p *ratus.Prom
 	f = append(f, bson.E{Key: keyID, Value: c.ID})
 	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
-	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
 
 		// The only reason that could lead to no match is that the task has
@@ -120,7 +120,7 @@ func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (
 		f = append(f, bson.E{Key: keyNonce, Value: m.Nonce})
 	}
 	u := updateOpsCommit(m)
-	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 
 	// Use an atomic findAndModify command to apply the updates and return the
 	// update task. This operation is expected to work only on unsharded
@@ -130,7 +130,7 @@ func (g *Engine) commitAtomic(ctx context.Context, id string, m *ratus.Commit) (
 		// Check if the failure is due to a mismatch of nonce or the target
 		// task does not exist.
 		if err == mongo.ErrNoDocuments {
-			if m.Nonce != "" && g.exists(ctx, bson.D{{Key: keyID, Value: id}}, hintID) {
+			if m.Nonce != "" && g.exists(ctx, bson.D{{Key: keyID, Value: id}}, indexID) {
 				err = ratus.ErrConflict
 			} else {
 				err = ratus.ErrNotFound
@@ -147,7 +147,7 @@ func (g *Engine) commitOptimistic(ctx context.Context, id string, m *ratus.Commi
 
 	// Get current information of the target task.
 	f := bson.D{{Key: keyID, Value: id}}
-	c, err := g.peek(ctx, f, nil, hintID)
+	c, err := g.peek(ctx, f, nil, indexID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -168,7 +168,7 @@ func (g *Engine) commitOptimistic(ctx context.Context, id string, m *ratus.Commi
 	f = append(f, bson.E{Key: keyState, Value: c.State})
 	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsCommit(m)
-	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
 
 		// The only reason that could lead to no match is that the task has

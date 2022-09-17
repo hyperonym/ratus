@@ -19,7 +19,7 @@ func (g *Engine) ListPromises(ctx context.Context, topic string, limit, offset i
 	}
 
 	// Promises in effect are represented in MongoDB as fields of the active tasks.
-	o := options.Find().SetLimit(int64(limit)).SetSkip(int64(offset)).SetHint(hintActiveTopic)
+	o := options.Find().SetLimit(int64(limit)).SetSkip(int64(offset)).SetHint(indexActiveTopic)
 	r, err := g.collection.Find(ctx, f, o)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (g *Engine) DeletePromises(ctx context.Context, topic string) (*ratus.Delet
 
 	// Deleting promises is equivalent to setting the states of the active
 	// tasks back to "pending" and clearing the nonce fields.
-	o := options.Update().SetUpsert(false).SetHint(hintActiveTopic)
+	o := options.Update().SetUpsert(false).SetHint(indexActiveTopic)
 	r, err := g.collection.UpdateMany(ctx, f, updateOpsRecover(), o)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (g *Engine) GetPromise(ctx context.Context, id string) (*ratus.Promise, err
 	}
 
 	// A promise in effect is represented in MongoDB as fields of an active task.
-	o := options.FindOne().SetHint(hintID)
+	o := options.FindOne().SetHint(indexID)
 	if err := g.collection.FindOne(ctx, f, o).Decode(&v); err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -94,13 +94,13 @@ func (g *Engine) insertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 		{Key: keyState, Value: ratus.TaskStatePending},
 	}
 	u := updateOpsConsume(p, t)
-	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
 
 		// Check if the failure is due to a mismatch of state or the target
 		// task does not exist.
 		if err == mongo.ErrNoDocuments {
-			if g.exists(ctx, bson.D{{Key: keyID, Value: p.ID}}, hintID) {
+			if g.exists(ctx, bson.D{{Key: keyID, Value: p.ID}}, indexID) {
 				err = ratus.ErrConflict
 			} else {
 				err = ratus.ErrNotFound
@@ -117,7 +117,7 @@ func (g *Engine) insertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 
 	// Get current information of the target task.
 	f := bson.D{{Key: keyID, Value: p.ID}}
-	c, err := g.peek(ctx, f, nil, hintID)
+	c, err := g.peek(ctx, f, nil, indexID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -139,7 +139,7 @@ func (g *Engine) insertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 	f = append(f, bson.E{Key: keyState, Value: ratus.TaskStatePending})
 	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
-	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
 
 		// The only reason that could lead to no match is that another consumer
@@ -172,7 +172,7 @@ func (g *Engine) upsertPromiseAtomic(ctx context.Context, p *ratus.Promise) (*ra
 	t := time.Now()
 	f := bson.D{{Key: keyID, Value: p.ID}}
 	u := updateOpsConsume(p, t)
-	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	o := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, o).Decode(&v); err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -188,7 +188,7 @@ func (g *Engine) upsertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 
 	// Get current information of the target task.
 	f := bson.D{{Key: keyID, Value: p.ID}}
-	c, err := g.peek(ctx, f, nil, hintID)
+	c, err := g.peek(ctx, f, nil, indexID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			err = ratus.ErrNotFound
@@ -205,7 +205,7 @@ func (g *Engine) upsertPromiseOptimistic(ctx context.Context, p *ratus.Promise) 
 	f = append(f, bson.E{Key: keyState, Value: c.State})
 	f = append(f, bson.E{Key: keyNonce, Value: c.Nonce})
 	u := updateOpsConsume(p, t)
-	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(hintID)
+	n := options.FindOneAndUpdate().SetUpsert(false).SetReturnDocument(options.After).SetHint(indexID)
 	if err := g.collection.FindOneAndUpdate(ctx, f, u, n).Decode(&v); err != nil {
 
 		// The only reason that could lead to no match is that another consumer
@@ -228,7 +228,7 @@ func (g *Engine) DeletePromise(ctx context.Context, id string) (*ratus.Deleted, 
 
 	// Deleting a promise is equivalent to setting the state of the target task
 	// back to "pending" and clearing the nonce field.
-	o := options.Update().SetUpsert(false).SetHint(hintID)
+	o := options.Update().SetUpsert(false).SetHint(indexID)
 	r, err := g.collection.UpdateOne(ctx, f, updateOpsRecover(), o)
 	if err != nil {
 		return nil, err
