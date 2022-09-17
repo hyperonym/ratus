@@ -70,7 +70,7 @@ func (g *Engine) GetPromise(ctx context.Context, id string) (*ratus.Promise, err
 		return nil, ratus.ErrNotFound
 	}
 	t := r.(*ratus.Task)
-	if t.State != ratus.TaskStatePending {
+	if t.State != ratus.TaskStateActive {
 		return nil, ratus.ErrNotFound
 	}
 
