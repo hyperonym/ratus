@@ -190,6 +190,8 @@ If the amount of data exceeds the capacity of a single node or replica set, choo
 
 #### Index Models
 
+The following indexes will be created on startup, unless `MONGODB_DISABLE_INDEX_CREATION` is set to `true`:
+
 | Key Patterns | Partial Filter Expression | TTL |
 | --- | --- | --- |
 | `{"topic": "hashed"}` | - | - |
