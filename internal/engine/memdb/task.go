@@ -20,7 +20,8 @@ func (g *Engine) ListTasks(ctx context.Context, topic string, limit, offset int)
 		if i < offset {
 			continue
 		}
-		v = append(v, r.(*ratus.Task))
+		t := *r.(*ratus.Task)
+		v = append(v, &t)
 	}
 
 	txn.Commit()
@@ -110,7 +111,8 @@ func (g *Engine) GetTask(ctx context.Context, id string) (*ratus.Task, error) {
 	}
 
 	txn.Commit()
-	return r.(*ratus.Task), nil
+	v := *r.(*ratus.Task)
+	return &v, nil
 }
 
 // InsertTask inserts a new task.
