@@ -153,12 +153,18 @@ Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/r
 
 Ratus provides a consistent API for various storage engine implementations, allowing users to choose a specific engine based on their needs without having to modify client-side code.
 
-| Name | Persistent | Replication | Partitioning | TTL | Status |
-| --- | :---: | :---: | :---: | :---: | --- |
-| `memdb` | ○ | ○ | ○ | ● | [![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml) |
-| `mongodb` | ● | ● | ● | ● | [![MongoDB](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml) |
+| Name | Persistent | Replication | Partitioning | TTL |
+| --- | :---: | :---: | :---: | :---: |
+| `memdb` | ○ | ○ | ○ | ● |
+| `mongodb` | ● | ● | ● | ● |
+
+### MemDB
+
+[![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml)
 
 ### MongoDB
+
+[![MongoDB](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml)
 
 Ratus works best with **MongoDB version ~4.4**. MongoDB 5.0+ is also supported but requires additional considerations, see [Implementation Details](https://github.com/hyperonym/ratus/blob/master/README.md#implementation-details) to learn more.
 
