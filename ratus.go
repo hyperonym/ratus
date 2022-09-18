@@ -82,10 +82,7 @@ type Topic struct {
 type Task struct {
 
 	// User-defined unique ID of the task.
-	// When using the MongoDB storage engine, tasks across all topics are
-	// stored in the same collection, thus their IDs share the same namespace.
-	// This is an intentional tradeoff to allow tasks to be efficiently moved
-	// from one topic to another.
+	// Task IDs across all topics share the same namespace.
 	ID string `json:"_id" bson:"_id"`
 
 	// Topic that the task currently belongs to. Tasks under the same topic
