@@ -17,7 +17,7 @@ type StateFieldIndex struct {
 }
 
 // FromObject implements the memdb.SingleIndexer interface.
-func (i *StateFieldIndex) FromObject(obj interface{}) (bool, []byte, error) {
+func (i *StateFieldIndex) FromObject(obj any) (bool, []byte, error) {
 
 	// Extract and validate the value.
 	v := reflect.ValueOf(obj)
@@ -43,7 +43,7 @@ func (i *StateFieldIndex) FromObject(obj interface{}) (bool, []byte, error) {
 }
 
 // FromArgs implements the memdb.Indexer interface.
-func (i *StateFieldIndex) FromArgs(args ...interface{}) ([]byte, error) {
+func (i *StateFieldIndex) FromArgs(args ...any) ([]byte, error) {
 	if len(args) != 1 {
 		return nil, fmt.Errorf("must provide only a single argument")
 	}
@@ -76,7 +76,7 @@ type TimeFieldIndex struct {
 }
 
 // FromObject implements the memdb.SingleIndexer interface.
-func (i *TimeFieldIndex) FromObject(obj interface{}) (bool, []byte, error) {
+func (i *TimeFieldIndex) FromObject(obj any) (bool, []byte, error) {
 
 	// Extract and validate the value.
 	v := reflect.ValueOf(obj)
@@ -97,7 +97,7 @@ func (i *TimeFieldIndex) FromObject(obj interface{}) (bool, []byte, error) {
 }
 
 // FromArgs implements the memdb.Indexer interface.
-func (i *TimeFieldIndex) FromArgs(args ...interface{}) ([]byte, error) {
+func (i *TimeFieldIndex) FromArgs(args ...any) ([]byte, error) {
 	if len(args) != 1 {
 		return nil, fmt.Errorf("must provide only a single argument")
 	}
