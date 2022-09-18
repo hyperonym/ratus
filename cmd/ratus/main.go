@@ -20,6 +20,7 @@ import (
 	"github.com/hyperonym/ratus/internal/config"
 	"github.com/hyperonym/ratus/internal/controller"
 	"github.com/hyperonym/ratus/internal/engine"
+	"github.com/hyperonym/ratus/internal/engine/memdb"
 	"github.com/hyperonym/ratus/internal/engine/mongodb"
 	"github.com/hyperonym/ratus/internal/metrics"
 	"github.com/hyperonym/ratus/internal/middleware"
@@ -31,15 +32,17 @@ var version string
 
 // Create type aliases for embedding engine-specific configurations.
 type (
+	memdbConfig   = memdb.Config
 	mongodbConfig = mongodb.Config
 )
 
 // args contains the command line arguments.
 type args struct {
-	Engine string `arg:"--engine,env:ENGINE" placeholder:"NAME" help:"name of the storage engine to be used" default:"mongodb"`
+	Engine string `arg:"--engine,env:ENGINE" placeholder:"NAME" help:"name of the storage engine to be used" default:"memdb"`
 	config.ServerConfig
 	config.ChoreConfig
 	config.PaginationConfig
+	memdbConfig
 	mongodbConfig
 }
 
@@ -85,6 +88,8 @@ func run() error {
 		err error
 	)
 	switch strings.ToLower(a.Engine) {
+	case "memdb":
+		g, err = memdb.New(&a.memdbConfig)
 	case "mongodb":
 		g, err = mongodb.New(&a.mongodbConfig)
 	default:
