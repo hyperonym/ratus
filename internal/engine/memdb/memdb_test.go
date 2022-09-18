@@ -41,7 +41,6 @@ func TestConfig(t *testing.T) {
 
 func TestSuite(t *testing.T) {
 	skipShort(t)
-
 	g, err := memdb.New(&memdb.Config{
 		RetentionPeriod: 1 * time.Second,
 	})
@@ -53,7 +52,6 @@ func TestSuite(t *testing.T) {
 
 func TestExpire(t *testing.T) {
 	skipShort(t)
-
 	ctx := context.Background()
 	g, err := memdb.New(&memdb.Config{
 		RetentionPeriod: 1 * time.Second,
@@ -98,38 +96,19 @@ func TestExpire(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := g.Chore(ctx); err != nil {
-		t.Error(err)
-	}
-	v, err := g.ListTasks(ctx, "test", 10, 0)
-	if err != nil {
-		t.Error(err)
-	}
-	if len(v) != 3 {
-		t.Errorf("incorrect number of results, expected 3, got %d", len(v))
-	}
-
-	time.Sleep(1 * time.Second)
-	if err := g.Chore(ctx); err != nil {
-		t.Error(err)
-	}
-	v, err = g.ListTasks(ctx, "test", 10, 0)
-	if err != nil {
-		t.Error(err)
-	}
-	if len(v) != 2 {
-		t.Errorf("incorrect number of results, expected 2, got %d", len(v))
-	}
-
-	time.Sleep(1 * time.Second)
-	if err := g.Chore(ctx); err != nil {
-		t.Error(err)
-	}
-	v, err = g.ListTasks(ctx, "test", 10, 0)
-	if err != nil {
-		t.Error(err)
-	}
-	if len(v) != 1 {
-		t.Errorf("incorrect number of results, expected 1, got %d", len(v))
+	for i := 0; i < 3; i++ {
+		if i > 0 {
+			time.Sleep(1 * time.Second)
+		}
+		if err := g.Chore(ctx); err != nil {
+			t.Error(err)
+		}
+		v, err := g.ListTasks(ctx, "test", 10, 0)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(v) != 3-i {
+			t.Errorf("incorrect number of results, expected %d, got %d", 3-i, len(v))
+		}
 	}
 }
