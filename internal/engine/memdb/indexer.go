@@ -9,10 +9,11 @@ import (
 	"github.com/hyperonym/ratus"
 )
 
-// StateFieldIndex is used to extract a task state field from an object using
-// reflection and builds an index on that field.
+// StateFieldIndex encodes task state fields for index building.
 type StateFieldIndex struct {
-	Field  string
+	Field string
+
+	// Filter down to a particular state for building partial indexes.
 	Filter ratus.TaskState
 }
 
@@ -63,14 +64,13 @@ func (i *StateFieldIndex) FromArgs(args ...any) ([]byte, error) {
 	// Check if the index should include the value.
 	s := ratus.TaskState(v.Int())
 	if s != i.Filter {
-		return nil, fmt.Errorf("value %v is not included in the index", s)
+		return nil, fmt.Errorf("state %v is not included in the index", s)
 	}
 
 	return []byte{uint8(s)}, nil
 }
 
-// TimeFieldIndex is used to extract a time field from an object using
-// reflection and builds an index on that field.
+// TimeFieldIndex encodes time fields for index building.
 type TimeFieldIndex struct {
 	Field string
 }

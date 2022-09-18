@@ -152,32 +152,31 @@ func (g *Engine) Ready(ctx context.Context) error {
 	return nil
 }
 
-// updateOpsRecover creates a new copy of the task with the following updates:
-// set the state of the task back to "pending" and clear the nonce field to
-// invalidate subsequent commits.
+// updateOpsRecover returns a copy of the task with the state set back to
+// "pending" and the nonce field cleared to invalidate subsequent commits.
 func updateOpsRecover(v *ratus.Task) *ratus.Task {
-	u := *v
+	u := clone(v)
 	u.State = ratus.TaskStatePending
 	u.Nonce = ""
-	return &u
+	return u
 }
 
-// updateOpsConsume creates a new copy of the task with the following updates:
-// set the task to the "active" state and populate fields with data from the promise.
+// updateOpsConsume returns a copy of the task with the state set to "active"
+// and other fields populated with data from the promise.
 func updateOpsConsume(v *ratus.Task, p *ratus.Promise, t time.Time) *ratus.Task {
-	u := *v
+	u := clone(v)
 	u.State = ratus.TaskStateActive
 	u.Nonce = nonce.Generate(ratus.NonceLength)
 	u.Consumer = p.Consumer
 	u.Consumed = &t
 	u.Deadline = p.Deadline
-	return &u
+	return u
 }
 
-// updateOpsCommit creates a new copy of the task with the following updates:
-// apply all updates specified in the given commit.
+// updateOpsCommit returns a copy of the task with updates specified in the
+// commit applied to it.
 func updateOpsCommit(v *ratus.Task, m *ratus.Commit) *ratus.Task {
-	u := *v
+	u := clone(v)
 	u.Nonce = ""
 	if m.Topic != "" {
 		u.Topic = m.Topic
@@ -191,5 +190,12 @@ func updateOpsCommit(v *ratus.Task, m *ratus.Commit) *ratus.Task {
 	if m.Payload != nil {
 		u.Payload = m.Payload
 	}
+	return u
+}
+
+// clone returns a shallow copy of the data referenced by the specified pointer
+// to avoid unsafe modifications of values in the database.
+func clone[T any](v *T) *T {
+	u := *v
 	return &u
 }

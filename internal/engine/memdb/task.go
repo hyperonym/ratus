@@ -11,17 +11,17 @@ func (g *Engine) ListTasks(ctx context.Context, topic string, limit, offset int)
 	txn := g.database.Txn(false)
 	defer txn.Abort()
 
-	v := make([]*ratus.Task, 0)
+	// Iterate through the index to return the specified number of results.
 	it, err := txn.Get(tableTask, indexTopic, topic)
 	if err != nil {
 		return nil, err
 	}
+	v := make([]*ratus.Task, 0)
 	for i, r := 0, it.Next(); i < offset+limit && r != nil; i, r = i+1, it.Next() {
 		if i < offset {
 			continue
 		}
-		t := *r.(*ratus.Task)
-		v = append(v, &t)
+		v = append(v, clone(r.(*ratus.Task)))
 	}
 
 	txn.Commit()
@@ -33,6 +33,7 @@ func (g *Engine) InsertTasks(ctx context.Context, ts []*ratus.Task) (*ratus.Upda
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Skip the task if a task with the same ID already exists.
 	var c int64
 	for _, t := range ts {
 		r, err := txn.First(tableTask, indexID, t.ID)
@@ -42,7 +43,7 @@ func (g *Engine) InsertTasks(ctx context.Context, ts []*ratus.Task) (*ratus.Upda
 		if r != nil {
 			continue
 		}
-		if err := txn.Insert(tableTask, t); err != nil {
+		if err := txn.Insert(tableTask, clone(t)); err != nil {
 			return nil, err
 		}
 		c++
@@ -60,13 +61,15 @@ func (g *Engine) UpsertTasks(ctx context.Context, ts []*ratus.Task) (*ratus.Upda
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Check if a task with the same ID already exists before updating to count
+	// the number of creations and modifications separately.
 	var c int64
 	for _, t := range ts {
 		r, err := txn.First(tableTask, indexID, t.ID)
 		if err != nil {
 			return nil, err
 		}
-		if err := txn.Insert(tableTask, t); err != nil {
+		if err := txn.Insert(tableTask, clone(t)); err != nil {
 			return nil, err
 		}
 		if r == nil {
@@ -111,8 +114,7 @@ func (g *Engine) GetTask(ctx context.Context, id string) (*ratus.Task, error) {
 	}
 
 	txn.Commit()
-	v := *r.(*ratus.Task)
-	return &v, nil
+	return clone(r.(*ratus.Task)), nil
 }
 
 // InsertTask inserts a new task.
@@ -120,6 +122,7 @@ func (g *Engine) InsertTask(ctx context.Context, t *ratus.Task) (*ratus.Updated,
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Check if a task with the same ID already exists.
 	r, err := txn.First(tableTask, indexID, t.ID)
 	if err != nil {
 		return nil, err
@@ -127,7 +130,7 @@ func (g *Engine) InsertTask(ctx context.Context, t *ratus.Task) (*ratus.Updated,
 	if r != nil {
 		return nil, ratus.ErrConflict
 	}
-	if err := txn.Insert(tableTask, t); err != nil {
+	if err := txn.Insert(tableTask, clone(t)); err != nil {
 		return nil, err
 	}
 
@@ -143,6 +146,8 @@ func (g *Engine) UpsertTask(ctx context.Context, t *ratus.Task) (*ratus.Updated,
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Check if a task with the same ID already exists before updating to count
+	// the number of creations and modifications separately.
 	var u int64
 	r, err := txn.First(tableTask, indexID, t.ID)
 	if err != nil {
@@ -151,7 +156,7 @@ func (g *Engine) UpsertTask(ctx context.Context, t *ratus.Task) (*ratus.Updated,
 	if r != nil {
 		u = 1
 	}
-	if err := txn.Insert(tableTask, t); err != nil {
+	if err := txn.Insert(tableTask, clone(t)); err != nil {
 		return nil, err
 	}
 

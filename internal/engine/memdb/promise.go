@@ -12,11 +12,12 @@ func (g *Engine) ListPromises(ctx context.Context, topic string, limit, offset i
 	txn := g.database.Txn(false)
 	defer txn.Abort()
 
-	v := make([]*ratus.Promise, 0)
+	// Iterate through the index to return the specified number of results.
 	it, err := txn.Get(tableTask, indexActiveTopic, ratus.TaskStateActive, topic)
 	if err != nil {
 		return nil, err
 	}
+	v := make([]*ratus.Promise, 0)
 	for i, r := 0, it.Next(); i < offset+limit && r != nil; i, r = i+1, it.Next() {
 		if i < offset {
 			continue
@@ -38,6 +39,8 @@ func (g *Engine) DeletePromises(ctx context.Context, topic string) (*ratus.Delet
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Deleting promises is equivalent to setting the states of the active
+	// tasks back to "pending" and clearing the nonce fields.
 	var d int64
 	it, err := txn.Get(tableTask, indexActiveTopic, ratus.TaskStateActive, topic)
 	if err != nil {
@@ -62,6 +65,7 @@ func (g *Engine) GetPromise(ctx context.Context, id string) (*ratus.Promise, err
 	txn := g.database.Txn(false)
 	defer txn.Abort()
 
+	// A promise in effect is represented in MemDB as fields of an active task.
 	r, err := txn.First(tableTask, indexID, id)
 	if err != nil {
 		return nil, err
@@ -87,6 +91,7 @@ func (g *Engine) InsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Ta
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Check if the target task is in pending state.
 	r, err := txn.First(tableTask, indexID, p.ID)
 	if err != nil {
 		return nil, err
@@ -104,8 +109,7 @@ func (g *Engine) InsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Ta
 	}
 
 	txn.Commit()
-	v := *u
-	return &v, nil
+	return clone(u), nil
 }
 
 // UpsertPromise makes a promise to claim and execute a task regardless of its current state.
@@ -113,6 +117,7 @@ func (g *Engine) UpsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Ta
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Check if the target task exists.
 	r, err := txn.First(tableTask, indexID, p.ID)
 	if err != nil {
 		return nil, err
@@ -127,8 +132,7 @@ func (g *Engine) UpsertPromise(ctx context.Context, p *ratus.Promise) (*ratus.Ta
 	}
 
 	txn.Commit()
-	v := *u
-	return &v, nil
+	return clone(u), nil
 }
 
 // DeletePromise deletes a promise by the unique ID of its target task.
@@ -136,14 +140,15 @@ func (g *Engine) DeletePromise(ctx context.Context, id string) (*ratus.Deleted, 
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
+	// Deleting a promise is equivalent to setting the state of the target task
+	// back to "pending" and clearing the nonce field.
 	var d int64
 	r, err := txn.First(tableTask, indexID, id)
 	if err != nil {
 		return nil, err
 	}
 	if r != nil {
-		t := r.(*ratus.Task)
-		if t.State == ratus.TaskStateActive {
+		if t := r.(*ratus.Task); t.State == ratus.TaskStateActive {
 			if err := txn.Insert(tableTask, updateOpsRecover(t)); err != nil {
 				return nil, err
 			}
