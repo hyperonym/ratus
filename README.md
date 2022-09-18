@@ -1,7 +1,6 @@
 # Ratus
 
 [![Go](https://github.com/hyperonym/ratus/actions/workflows/go.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/go.yml)
-[![MongoDB](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml)
 [![codecov](https://codecov.io/gh/hyperonym/ratus/branch/master/graph/badge.svg?token=6HJKAQ9XR1)](https://codecov.io/gh/hyperonym/ratus)
 [![Go Reference](https://pkg.go.dev/badge/github.com/hyperonym/ratus.svg)](https://pkg.go.dev/github.com/hyperonym/ratus)
 [![Swagger Validator](https://img.shields.io/swagger/valid/3.0?specUrl=https%3A%2F%2Fraw.githubusercontent.com%2Fhyperonym%2Fratus%2Fmaster%2Fdocs%2Fswagger.json)](https://hyperonym.github.io/ratus/)
@@ -154,9 +153,10 @@ Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/r
 
 Ratus provides a consistent API for various storage engine implementations, allowing users to choose a specific engine based on their needs without having to modify client-side code.
 
-| Name | Persistent | Replication | Partitioning | TTL
-| --- | :---: | :---: | :---: | :---: |
-| `mongodb` | ● | ● | ● | ● |
+| Name | Persistent | Replication | Partitioning | TTL | Status |
+| --- | :---: | :---: | :---: | :---: | --- |
+| `memdb` | ○ | ○ | ○ | ● | [![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml) |
+| `mongodb` | ● | ● | ● | ● | [![MongoDB](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml) |
 
 ### MongoDB
 
