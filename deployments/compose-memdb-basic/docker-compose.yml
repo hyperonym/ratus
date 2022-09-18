@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     environment:
       ENGINE: "memdb"
+      MEMDB_SNAPSHOT_PATH: "/ratus.db"
+      MEMDB_SNAPSHOT_INTERVAL: "5m"
       MEMDB_RETENTION_PERIOD: "72h"
     ports:
       - "8000:80"
