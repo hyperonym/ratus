@@ -1131,7 +1131,7 @@
             "type": "object",
             "properties": {
                 "_id": {
-                    "description": "User-defined unique ID of the task.\nWhen using the MongoDB storage engine, tasks across all topics are\nstored in the same collection, thus their IDs share the same namespace.\nThis is an intentional tradeoff to allow tasks to be efficiently moved\nfrom one topic to another.",
+                    "description": "User-defined unique ID of the task.\nTask IDs across all topics share the same namespace.",
                     "type": "string"
                 },
                 "consumed": {
