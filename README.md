@@ -7,15 +7,17 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/hyperonym/ratus)](https://goreportcard.com/report/github.com/hyperonym/ratus)
 [![Status](https://img.shields.io/badge/status-beta-blue)](https://github.com/hyperonym/ratus)
 
-Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to REST principles and provides an easy-to-use [HTTP API](https://hyperonym.github.io/ratus/).
+Ratus is a RESTful asynchronous task queue server. It translated concepts of distributed task queues into a set of resources that conform to REST principles and provides a consistent [HTTP API](https://hyperonym.github.io/ratus/) for various backends based on embedded or external [storage engines](https://github.com/hyperonym/ratus/blob/master/README.md#engines).
 
 The key features of Ratus are:
 
+* Self-contained binary with embedded backend.
 * Guaranteed at-least-once execution of tasks.
 * Automatic recovery of timed out tasks.
 * Simple language agnostic RESTful API.
 * Time-based task scheduling.
 * Naturally load balanced across consumers.
+* Persistent and ephemeral storage options.
 * Support dynamic topology changes.
 * Scaling through replication and partitioning.
 * Pluggable storage engine architecture.
@@ -34,10 +36,22 @@ Ratus offers a variety of installation options:
 * Pre-built binaries for all major platforms are available on the [GitHub releases](https://github.com/hyperonym/ratus/releases) page.
 * Build from source with `go install github.com/hyperonym/ratus/cmd/ratus@latest`.
 
-Depending on the [storage engine](https://github.com/hyperonym/ratus/blob/master/README.md#engines) you choose, you may also need to deploy the corresponding database or broker. Using the default `mongodb` engine as an example, assuming the database is already running locally, then start Ratus with:
+Starting Ratus with the default in-memory storage engine `memdb` is as simple as typing:
 
 ```bash
-$ ratus --port 8000 --mongodb-uri mongodb://127.0.0.1:27017
+$ ratus
+```
+
+If you want to use a port other than the default HTTP port (`80`) and enable on-disk snapshot for persistence, start Ratus with:
+
+```bash
+$ ratus --port 8000 --memdb-snapshot-path ratus.db
+```
+
+Depending on the [storage engine](https://github.com/hyperonym/ratus/blob/master/README.md#engines) you choose, you may also need to deploy the corresponding database or broker. Using the `mongodb` engine as an example, assuming the database is already running locally, then start Ratus with:
+
+```bash
+$ ratus --port 8000 --engine mongodb --mongodb-uri mongodb://127.0.0.1:27017
 ```
 
 ### Basic Usage
@@ -153,14 +167,27 @@ Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/r
 
 Ratus provides a consistent API for various storage engine implementations, allowing users to choose a specific engine based on their needs without having to modify client-side code.
 
-| Name | Persistent | Replication | Partitioning | TTL |
+To use a specific engine, set the `--engine` flag or `ENGINE` environment variable to one of the following names:
+
+| Name | Persistence | Replication | Partitioning | TTL |
 | --- | :---: | :---: | :---: | :---: |
-| `memdb` | ○ | ○ | ○ | ● |
+| `memdb` | ○/● | ○ | ○ | ● |
 | `mongodb` | ● | ● | ● | ● |
 
 ### MemDB
 
 [![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml)
+
+MemDB is the default storage engine for Ratus. It is implemented on top of [go-memdb](https://github.com/hashicorp/go-memdb), which is built on immutable radix trees.
+
+#### Persistence
+
+The MemDB storage engine is ephemeral by default, but it also provides snapshot-based persistence options. Unlike [Redis](https://redis.io/docs/manual/persistence/), MemDB does not support Append-Only File (AOF), which means in case of Ratus stopping working without a graceful shutdown for any reason you should be prepared to lose the latest minutes of data.
+
+#### Implementation Details
+
+* List operations are relatively expensive as they require scanning the entire database or index until the required number of results are collected. Fortunately, these operations are not used in most scenarios.
+* Snapshotting does not have its own timer, but is executed along with the periodic background jobs, so the specified interval is only the minimum writing interval. When the amount of data is large, writing snapshot files may delay the execution of background jobs.
 
 ### MongoDB
 
