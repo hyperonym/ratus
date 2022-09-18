@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  ratus:
+    image: hyperonym/ratus:0.3.0
+    restart: unless-stopped
+    environment:
+      ENGINE: "memdb"
+      MEMDB_RETENTION_PERIOD: "72h"
+    ports:
+      - "8000:80"
