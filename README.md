@@ -193,7 +193,7 @@ The MemDB storage engine is ephemeral by default, but it also provides snapshot-
 
 [![MongoDB](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/mongodb.yml)
 
-Ratus works best with **MongoDB version ~4.4**. MongoDB 5.0+ is also supported but requires additional considerations, see [Implementation Details](https://github.com/hyperonym/ratus/blob/master/README.md#implementation-details) to learn more.
+Ratus works best with **MongoDB version ~4.4**. MongoDB 5.0+ is also supported but requires additional considerations, see [Implementation Details](https://github.com/hyperonym/ratus/blob/master/README.md#implementation-details-1) to learn more.
 
 > 💭 **TL;DR** set `MONGODB_DISABLE_ATOMIC_POLL=true` when using Ratus with MongoDB 5.0+.
 
