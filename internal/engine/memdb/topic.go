@@ -15,7 +15,7 @@ func (g *Engine) ListTopics(ctx context.Context, limit, offset int) ([]*ratus.To
 	// the entire database until the required number of results are collected.
 	var p string
 	v := make([]*ratus.Topic, 0)
-	it, err := txn.Get(tableTask, indexID)
+	it, err := txn.Get(tableTask, indexTopic)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (g *Engine) DeleteTopics(ctx context.Context) (*ratus.Deleted, error) {
 	txn := g.database.Txn(true)
 	defer txn.Abort()
 
-	n, err := txn.DeleteAll(tableTask, indexID)
+	n, err := txn.DeleteAll(tableTask, indexTopic)
 	if err != nil {
 		return nil, err
 	}
