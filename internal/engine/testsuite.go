@@ -825,4 +825,106 @@ func Test(t *testing.T, g Engine) {
 			}
 		})
 	})
+
+	// Test operations with pagination support.
+	t.Run("pagination", func(t *testing.T) {
+		n := time.Now()
+		if _, err := g.InsertTasks(ctx, []*ratus.Task{
+			{
+				ID:        "1",
+				Topic:     "a",
+				State:     ratus.TaskStateActive,
+				Produced:  &n,
+				Scheduled: &n,
+				Payload:   "a",
+			},
+			{
+				ID:        "2",
+				Topic:     "b",
+				State:     ratus.TaskStateActive,
+				Produced:  &n,
+				Scheduled: &n,
+				Payload:   "b",
+			},
+			{
+				ID:        "3",
+				Topic:     "c",
+				State:     ratus.TaskStateActive,
+				Produced:  &n,
+				Scheduled: &n,
+				Payload:   "c-3",
+			},
+			{
+				ID:        "4",
+				Topic:     "c",
+				State:     ratus.TaskStateActive,
+				Produced:  &n,
+				Scheduled: &n,
+				Payload:   "c-4",
+			},
+		}); err != nil {
+			t.Error(err)
+		}
+
+		t.Run("topic", func(t *testing.T) {
+			v, err := g.ListTopics(ctx, 1, 1)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 1 {
+				t.Errorf("incorrect number of results, expected 1, got %d", len(v))
+			}
+			v, err = g.ListTopics(ctx, 10, 10)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
+		})
+
+		t.Run("task", func(t *testing.T) {
+			v, err := g.ListTasks(ctx, "c", 1, 1)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 1 {
+				t.Errorf("incorrect number of results, expected 1, got %d", len(v))
+			}
+			v, err = g.ListTasks(ctx, "c", 10, 10)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
+		})
+
+		t.Run("promise", func(t *testing.T) {
+			v, err := g.ListPromises(ctx, "c", 1, 1)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 1 {
+				t.Errorf("incorrect number of results, expected 1, got %d", len(v))
+			}
+			v, err = g.ListPromises(ctx, "c", 10, 10)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
+		})
+
+		t.Run("clean", func(t *testing.T) {
+			d, err := g.DeleteTopics(ctx)
+			if err != nil {
+				t.Error(err)
+			}
+			if d.Deleted != 4 {
+				t.Errorf("incorrect number of deletions, expected 4, got %d", d.Deleted)
+			}
+		})
+	})
 }
