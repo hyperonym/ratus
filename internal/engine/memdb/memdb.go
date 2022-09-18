@@ -3,6 +3,13 @@ package memdb
 
 import (
 	"context"
+	"encoding/gob"
+	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"sync"
 	"time"
 
 	"github.com/hashicorp/go-memdb"
@@ -36,6 +43,9 @@ const (
 
 // Config contains configurations for the MemDB storage engine.
 type Config struct {
+	SnapshotPath     string        `arg:"--memdb-snapshot-path,env:MEMDB_SNAPSHOT_PATH" placeholder:"PATH" help:"path to the snapshot file" default:""`
+	SnapshotInterval time.Duration `arg:"--memdb-snapshot-interval,env:MEMDB_SNAPSHOT_INTERVAL" placeholder:"DURATION" help:"interval for writing snapshots to disk" default:"5m"`
+
 	RetentionPeriod time.Duration `arg:"--memdb-retention-period,env:MEMDB_RETENTION_PERIOD" placeholder:"DURATION" help:"retention period for completed tasks" default:"72h"`
 }
 
@@ -44,6 +54,9 @@ type Engine struct {
 	config   *Config
 	schema   *memdb.DBSchema
 	database *memdb.MemDB
+
+	mux   sync.Mutex
+	saved time.Time
 }
 
 // New creates a new MemDB storage engine instance.
@@ -125,14 +138,27 @@ func New(c *Config) (*Engine, error) {
 
 // Open or connect to the storage engine.
 func (g *Engine) Open(ctx context.Context) error {
-	var err error
-	g.database, err = memdb.NewMemDB(g.schema)
-	return err
+	db, err := memdb.NewMemDB(g.schema)
+	if err != nil {
+		return err
+	}
+
+	// Load data from snapshot file if required.
+	if g.config.SnapshotPath != "" {
+		if err := load(db, g.config.SnapshotPath); err != nil {
+			return err
+		}
+	}
+
+	g.database = db
+	return nil
 }
 
 // Close or disconnect from the storage engine.
 func (g *Engine) Close(ctx context.Context) error {
-	// No need to close anything.
+	if g.config.SnapshotPath != "" {
+		return save(g.database, g.config.SnapshotPath)
+	}
 	return nil
 }
 
@@ -141,7 +167,16 @@ func (g *Engine) Destroy(ctx context.Context) error {
 	if _, err := g.DeleteTopics(ctx); err != nil {
 		return err
 	}
-	return g.Close(ctx)
+	if err := g.Close(ctx); err != nil {
+		return err
+	}
+
+	// Remove the snapshot file after closing.
+	if g.config.SnapshotPath != "" {
+		return os.Remove(g.config.SnapshotPath)
+	}
+
+	return nil
 }
 
 // Ready probes the storage engine and returns an error if it is not ready.
@@ -198,4 +233,80 @@ func updateOpsCommit(v *ratus.Task, m *ratus.Commit) *ratus.Task {
 func clone[T any](v *T) *T {
 	u := *v
 	return &u
+}
+
+// save writes a snapshot of the database to a file.
+func save(db *memdb.MemDB, path string) error {
+
+	// Create a temporary file for writing the snapshot.
+	p := fmt.Sprintf("%s.%s", path, nonce.Generate(8))
+	f, err := os.Create(p)
+	if err != nil {
+		return err
+	}
+
+	// Rename or delete the temporary file before returning.
+	var ok bool
+	defer func() {
+		f.Close()
+		if !ok {
+			os.Remove(p)
+		} else {
+			os.Rename(p, path)
+		}
+	}()
+
+	// Create a snapshot of the database and encode all records.
+	enc := gob.NewEncoder(f)
+	txn := db.Snapshot().Txn(false)
+	defer txn.Abort()
+	it, err := txn.Get(tableTask, indexID)
+	if err != nil {
+		return err
+	}
+	for r := it.Next(); r != nil; r = it.Next() {
+		if err := enc.Encode(r); err != nil {
+			return err
+		}
+	}
+	txn.Commit()
+
+	// Mark the operation as successful.
+	ok = true
+
+	return nil
+}
+
+// load recovers data from a snapshot file.
+func load(db *memdb.MemDB, path string) error {
+
+	// Open the snapshot file if it exists.
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	defer f.Close()
+
+	// Decode records in the snapshot file and insert them into the database.
+	dec := gob.NewDecoder(f)
+	txn := db.Txn(true)
+	defer txn.Abort()
+	for {
+		var t ratus.Task
+		if err := dec.Decode(&t); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return err
+		}
+		if err := txn.Insert(tableTask, &t); err != nil {
+			return err
+		}
+	}
+	txn.Commit()
+
+	return nil
 }

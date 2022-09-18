@@ -46,7 +46,24 @@ func (g *Engine) Chore(ctx context.Context) error {
 		}
 	}
 
+	// Commit the transaction before writing snapshot.
 	txn.Commit()
+
+	// Write a snapshot if the time since the last save exceeded the interval.
+	if g.config.SnapshotPath == "" {
+		return nil
+	}
+	g.mux.Lock()
+	defer g.mux.Unlock()
+	n = time.Now()
+	if g.saved.Add(g.config.SnapshotInterval).After(n) {
+		return nil
+	}
+	if err := save(g.database, g.config.SnapshotPath); err != nil {
+		return err
+	}
+	g.saved = n
+
 	return nil
 }
 
