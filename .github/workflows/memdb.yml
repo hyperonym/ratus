@@ -1,0 +1,27 @@
+name: MemDB
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: go-memdb
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: main
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          path: main
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'main/go.mod'
+          check-latest: true
+      - name: Test packages
+        run: make test-engine-memdb
