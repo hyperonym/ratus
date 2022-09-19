@@ -40,7 +40,9 @@ Running Ratus from the command line is as simple as typing:
 $ ratus
 ```
 
-The above command will start an ephemeral Ratus instance using the default in-memory storage engine `memdb` and listen on the default HTTP port of `80`. To use another port and enable on-disk snapshot for persistence, start Ratus with:
+The above command will start an ephemeral Ratus instance using the default in-memory storage engine `memdb` and listen on the default HTTP port of `80`.
+
+To use another port and enable on-disk snapshot for persistence, start Ratus with:
 
 ```bash
 $ ratus --port 8000 --engine memdb --memdb-snapshot-path ratus.db
@@ -176,7 +178,7 @@ To use a specific engine, set the `--engine` flag or `ENGINE` environment variab
 
 [![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml)
 
-MemDB is the default storage engine for Ratus. It is implemented on top of [go-memdb](https://github.com/hashicorp/go-memdb), which is built on immutable radix trees. MemDB is suitable for development and small-scale **production environments where durability is not critical**.
+MemDB is the default storage engine for Ratus. It is implemented on top of [go-memdb](https://github.com/hashicorp/go-memdb), which is built on immutable radix trees. MemDB is suitable for development and **production environments where durability is not critical**.
 
 #### Persistence
 
