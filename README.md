@@ -40,7 +40,7 @@ Running Ratus from the command line is as simple as typing:
 $ ratus
 ```
 
-The above command will start an ephemeral Ratus instance using the default in-memory storage engine `memdb` and listen on the default HTTP port of `80`.
+The above command will start an ephemeral Ratus instance using the default in-memory storage engine `memdb` and listen on the default HTTP port of **80**.
 
 To use another port and enable on-disk snapshot for persistence, start Ratus with:
 
