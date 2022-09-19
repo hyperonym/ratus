@@ -169,7 +169,7 @@ Ratus provides a consistent API for various backends, allowing users to choose a
 
 To use a specific engine, set the `--engine` flag or `ENGINE` environment variable to one of the following names:
 
-| Name | Persistence | Replication | Partitioning | TTL |
+| Name | Persistence | Replication | Partitioning | Expiration |
 | --- | :---: | :---: | :---: | :---: |
 | `memdb` | ○/● | ○ | ○ | ● |
 | `mongodb` | ● | ● | ● | ● |
@@ -190,6 +190,8 @@ MemDB does not write [Append-Only Files](https://redis.io/docs/manual/persistenc
 
 * **List operations are relatively expensive** as they require scanning the entire database or index until the required number of results are collected. Fortunately, these operations are not used in most scenarios.
 * Snapshotting is performed along with the periodic background jobs when appropriate. **Writing snapshot files may delay the execution of background jobs** if the amount of data is large.
+* Since the resolution of the scheduled time in MemDB is in millisecond level and is affected by the instance's own clock, **the order in which consumers receive tasks is not strictly guaranteed**.
+* TTL cannot be disabled for `completed` tasks, in order to preserve a task forever, set it to the `archived` state.
 
 ### MongoDB
 
@@ -261,8 +263,7 @@ Ratus supports [liveness and readiness probes](https://kubernetes.io/docs/tasks/
 ## Caveats
 
 * 🚨 **Topic names and task IDs must not contain plus signs ('+') due to [gin-gonic/gin#2633](https://github.com/gin-gonic/gin/issues/2633).**
-* It is not recommended to use Ratus as the main storage of tasks. Instead, consider storing the complete task record in a database, and **use a minimal descriptor as the payload for Ratus.**
-* The `completed` state only indicates that the task has been executed, it does not mean the task was successful.
+* It is not recommended to use Ratus as the primary storage of tasks. Instead, consider storing the complete task record in a database, and **use a minimal descriptor as the payload for Ratus.**
 * Ratus is a simple and efficient alternative to task queues like [Celery](https://docs.celeryq.dev/). Consider to use [RabbitMQ](https://www.rabbitmq.com/) or [Kafka](https://kafka.apache.org/) if you need high-throughput message passing without task management.
 
 ## Frequently Asked Questions
@@ -271,7 +272,7 @@ For more details, see [Architectural Decision Records](https://github.com/hypero
 
 ### Why HTTP API?
 
-> Asynchronous task queues are typically used for long background tasks, so the overhead of the HTTP API is not significant compared to the time spent by the tasks themselves. On the other hand, the HTTP-based RESTful API can be easily accessed by all languages without using dedicated client libraries.
+> Asynchronous task queues are typically used for long-running background tasks, so the overhead of HTTP is not significant compared to the time spent by the tasks themselves. On the other hand, the HTTP-based RESTful API can be easily accessed by all languages without using dedicated client libraries.
 
 ### How to poll from multiple topics?
 
