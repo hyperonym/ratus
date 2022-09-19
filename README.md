@@ -11,17 +11,15 @@ Ratus is a RESTful asynchronous task queue server. It translated concepts of dis
 
 The key features of Ratus are:
 
-* Self-contained binary with embedded backend.
+* Self-contained binary with a fast in-memory storage.
+* Support multiple embedded or external storage engines.
 * Guaranteed at-least-once execution of tasks.
-* Automatic recovery of timed out tasks.
-* Simple language agnostic RESTful API.
-* Time-based task scheduling.
-* Naturally load balanced across consumers.
-* Persistent and ephemeral storage options.
-* Support dynamic topology changes.
-* Scaling through replication and partitioning.
-* Pluggable storage engine architecture.
-* Prometheus integration for observability.
+* Unified model for prioritized and time-based scheduling.
+* Task-level timeout control with automatic recovery.
+* Language agnostic RESTful API with built-in Swagger UI.
+* Load balancing across a dynamic number of consumers.
+* Horizontal scaling through replication and partitioning.
+* Native support for Prometheus and Kubernetes.
 
 ![Terminal screenshot](https://github.com/hyperonym/ratus/blob/master/docs/assets/terminal.png?raw=true)
 
@@ -36,16 +34,16 @@ Ratus offers a variety of installation options:
 * Pre-built binaries for all major platforms are available on the [GitHub releases](https://github.com/hyperonym/ratus/releases) page.
 * Build from source with `go install github.com/hyperonym/ratus/cmd/ratus@latest`.
 
-Starting Ratus with the default in-memory storage engine `memdb` is as simple as typing:
+Running Ratus from the command line is as simple as typing:
 
 ```bash
 $ ratus
 ```
 
-If you want to use a port other than the default HTTP port (`80`) and enable on-disk snapshot for persistence, start Ratus with:
+The above command will start an ephemeral Ratus instance using the default in-memory storage engine `memdb` and listen on the default HTTP port of `80`. To use another port and enable on-disk snapshot for persistence, start Ratus with:
 
 ```bash
-$ ratus --port 8000 --memdb-snapshot-path ratus.db
+$ ratus --port 8000 --engine memdb --memdb-snapshot-path ratus.db
 ```
 
 Depending on the [storage engine](https://github.com/hyperonym/ratus/blob/master/README.md#engines) you choose, you may also need to deploy the corresponding database or broker. Using the `mongodb` engine as an example, assuming the database is already running locally, then start Ratus with:
@@ -165,7 +163,7 @@ Ratus comes with a [Go client library](https://pkg.go.dev/github.com/hyperonym/r
 
 ## Engines
 
-Ratus provides a consistent API for various storage engine implementations, allowing users to choose a specific engine based on their needs without having to modify client-side code.
+Ratus provides a consistent API for various backends, allowing users to choose a specific engine based on their needs without having to modify client-side code.
 
 To use a specific engine, set the `--engine` flag or `ENGINE` environment variable to one of the following names:
 
@@ -178,16 +176,18 @@ To use a specific engine, set the `--engine` flag or `ENGINE` environment variab
 
 [![MemDB](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml/badge.svg)](https://github.com/hyperonym/ratus/actions/workflows/memdb.yml)
 
-MemDB is the default storage engine for Ratus. It is implemented on top of [go-memdb](https://github.com/hashicorp/go-memdb), which is built on immutable radix trees.
+MemDB is the default storage engine for Ratus. It is implemented on top of [go-memdb](https://github.com/hashicorp/go-memdb), which is built on immutable radix trees. MemDB is suitable for development and small-scale **production environments where durability is not critical**.
 
 #### Persistence
 
-The MemDB storage engine is ephemeral by default, but it also provides snapshot-based persistence options. Unlike [Redis](https://redis.io/docs/manual/persistence/), MemDB does not support Append-Only File (AOF), which means in case of Ratus stopping working without a graceful shutdown for any reason you should be prepared to lose the latest minutes of data.
+The MemDB storage engine is ephemeral by default, but it also provides **snapshot-based persistence** options. By setting the `--memdb-snapshot-path` flag or `MEMDB_SNAPSHOT_PATH` environment variable to a non-empty file path, Ratus will write on-disk snapshots at an interval specified by `MEMDB_SNAPSHOT_INTERVAL`.
+
+MemDB does not write [Append-Only Files](https://redis.io/docs/manual/persistence/#aof-advantages) (AOF), which means in case of Ratus stopping working without a graceful shutdown for any reason you should be prepared to lose the latest minutes of data. If durability is critical to your workflow, switch to an external storage engine like `mongodb`.
 
 #### Implementation Details
 
-* List operations are relatively expensive as they require scanning the entire database or index until the required number of results are collected. Fortunately, these operations are not used in most scenarios.
-* Snapshotting does not have its own timer, but is executed along with the periodic background jobs, so the specified interval is only the minimum writing interval. When the amount of data is large, writing snapshot files may delay the execution of background jobs.
+* **List operations are relatively expensive** as they require scanning the entire database or index until the required number of results are collected. Fortunately, these operations are not used in most scenarios.
+* Snapshotting is performed along with the periodic background jobs when appropriate. **Writing snapshot files may delay the execution of background jobs** if the amount of data is large.
 
 ### MongoDB
 
@@ -261,7 +261,7 @@ Ratus supports [liveness and readiness probes](https://kubernetes.io/docs/tasks/
 * 🚨 **Topic names and task IDs must not contain plus signs ('+') due to [gin-gonic/gin#2633](https://github.com/gin-gonic/gin/issues/2633).**
 * It is not recommended to use Ratus as the main storage of tasks. Instead, consider storing the complete task record in a database, and **use a minimal descriptor as the payload for Ratus.**
 * The `completed` state only indicates that the task has been executed, it does not mean the task was successful.
-* Ratus is a simple and reliable alternative to task queues like [Celery](https://docs.celeryq.dev/). Consider to use [RabbitMQ](https://www.rabbitmq.com/) or [Kafka](https://kafka.apache.org/) if you need high-throughput message passing without task management.
+* Ratus is a simple and efficient alternative to task queues like [Celery](https://docs.celeryq.dev/). Consider to use [RabbitMQ](https://www.rabbitmq.com/) or [Kafka](https://kafka.apache.org/) if you need high-throughput message passing without task management.
 
 ## Frequently Asked Questions
 
