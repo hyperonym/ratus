@@ -881,6 +881,13 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 0 {
 				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
 			}
+			v, err = g.ListTopics(ctx, 0, 0)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
 		})
 
 		t.Run("task", func(t *testing.T) {
@@ -898,6 +905,13 @@ func Test(t *testing.T, g Engine) {
 			if len(v) != 0 {
 				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
 			}
+			v, err = g.ListTasks(ctx, "c", 0, 0)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
 		})
 
 		t.Run("promise", func(t *testing.T) {
@@ -909,6 +923,13 @@ func Test(t *testing.T, g Engine) {
 				t.Errorf("incorrect number of results, expected 1, got %d", len(v))
 			}
 			v, err = g.ListPromises(ctx, "c", 10, 10)
+			if err != nil {
+				t.Error(err)
+			}
+			if len(v) != 0 {
+				t.Errorf("incorrect number of results, expected 0, got %d", len(v))
+			}
+			v, err = g.ListPromises(ctx, "c", 0, 0)
 			if err != nil {
 				t.Error(err)
 			}
