@@ -29,7 +29,7 @@ spec:
         app: ratus
     spec:
       containers:
-        - image: hyperonym/ratus:0.3.0
+        - image: hyperonym/ratus:0.4.0
           name: ratus
           env:
             - name: ENGINE
