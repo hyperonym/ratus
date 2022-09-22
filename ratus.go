@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reflect"
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
 
 // DefaultTimeout is the default timeout duration for task execution.
@@ -136,6 +140,36 @@ type Task struct {
 	// used when creating a task and will be cleared after converting to an
 	// absolute scheduled time.
 	Defer string `json:"defer,omitempty" bson:"-"`
+}
+
+// Ratus uses the BSON format to encode and decode data as it supports more
+// data types and has better performance comparing to encoding/gob.
+// Benchmarks: https://gist.github.com/everbeen/07c38dcbba8d8a9d3c6f
+//
+// By default, BSON documents will decode into interface values as bson.D.
+// This custom registry maps bsontype.EmbeddedDocument entry to bson.M, which
+// is more in line with the JSON marshaler/unmarshaler.
+var registry = bson.NewRegistryBuilder().RegisterTypeMapEntry(bsontype.EmbeddedDocument, reflect.TypeOf(bson.M{})).Build()
+
+// UnmarshalBSON implements the bson.Unmarshaler interface.
+func (t *Task) UnmarshalBSON(data []byte) error {
+	type TaskAlias Task
+	var a TaskAlias
+	if err := bson.UnmarshalWithRegistry(registry, data, &a); err != nil {
+		return err
+	}
+	*t = Task(a)
+	return nil
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (t *Task) MarshalBinary() ([]byte, error) {
+	return bson.Marshal(t)
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
+func (t *Task) UnmarshalBinary(data []byte) error {
+	return bson.Unmarshal(data, t)
 }
 
 // Promise represents a claim on the ownership of an active task.
