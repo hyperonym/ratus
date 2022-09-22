@@ -1,6 +1,6 @@
 NAME := ratus
 CMD := ratus
-VERSION := 0.3.0
+VERSION := 0.4.0
 
 DOCKER_HUB_OWNER ?= hyperonym
 DOCKER_HUB_IMAGE := $(DOCKER_HUB_OWNER)/$(NAME):$(VERSION)
