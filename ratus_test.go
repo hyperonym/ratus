@@ -16,6 +16,104 @@ import (
 	"github.com/hyperonym/ratus"
 )
 
+func TestPayload(t *testing.T) {
+	t.Run("empty", func(t *testing.T) {
+		t.Parallel()
+		var p any
+		v := ratus.Task{Payload: nil}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if p != nil {
+			t.Fail()
+		}
+	})
+
+	t.Run("bool", func(t *testing.T) {
+		t.Parallel()
+		var p bool
+		v := ratus.Task{Payload: true}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if !p {
+			t.Fail()
+		}
+	})
+
+	t.Run("int", func(t *testing.T) {
+		t.Parallel()
+		var p int
+		v := ratus.Task{Payload: 123}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if p != 123 {
+			t.Fail()
+		}
+	})
+
+	t.Run("float", func(t *testing.T) {
+		t.Parallel()
+		var p float32
+		v := ratus.Task{Payload: 3.14}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if p != 3.14 {
+			t.Fail()
+		}
+	})
+
+	t.Run("string", func(t *testing.T) {
+		t.Parallel()
+		var p string
+		v := ratus.Task{Payload: "hello"}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if p != "hello" {
+			t.Fail()
+		}
+	})
+
+	t.Run("array", func(t *testing.T) {
+		t.Parallel()
+		var p []any
+		v := ratus.Task{Payload: []any{1, 2, "a"}}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if len(p) != 3 {
+			t.Fail()
+		}
+	})
+
+	t.Run("nested", func(t *testing.T) {
+		t.Parallel()
+		var p struct {
+			Name string
+			Date struct {
+				Month int
+				Day   int
+			}
+		}
+		v := ratus.Task{Payload: map[string]any{
+			"name": "peak",
+			"date": map[string]int{
+				"month": 7,
+				"day":   29,
+			},
+		}}
+		if err := v.Decode(&p); err != nil {
+			t.Error(err)
+		}
+		if p.Name != "peak" || p.Date.Month != 7 || p.Date.Day != 29 {
+			t.Fail()
+		}
+	})
+}
+
 func TestEncoding(t *testing.T) {
 	n := time.Now()
 	m := map[string]any{

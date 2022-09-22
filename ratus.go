@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
@@ -140,6 +141,12 @@ type Task struct {
 	// used when creating a task and will be cleared after converting to an
 	// absolute scheduled time.
 	Defer string `json:"defer,omitempty" bson:"-"`
+}
+
+// Decode parses the payload of the task using reflection and stores the result
+// to the value pointed by the specified pointer.
+func (t *Task) Decode(v any) error {
+	return mapstructure.Decode(t.Payload, v)
 }
 
 // Ratus uses the BSON format to encode and decode data as it supports more
