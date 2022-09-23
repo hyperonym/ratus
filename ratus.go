@@ -3,6 +3,7 @@ package ratus
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -11,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
@@ -143,10 +143,19 @@ type Task struct {
 	Defer string `json:"defer,omitempty" bson:"-"`
 }
 
-// Decode parses the payload of the task using reflection and stores the result
-// to the value pointed by the specified pointer.
+// Decode parses the payload of the task and stores the result in the value
+// pointed by the specified pointer.
 func (t *Task) Decode(v any) error {
-	return mapstructure.Decode(t.Payload, v)
+
+	// Counterintuitively, the seemingly dumb approach of just marshalling
+	// input into JSON bytes and decoding it from those bytes is actually both
+	// 29.5% faster (than reflection) and causes less memory allocations.
+	// Reference: https://github.com/mitchellh/mapstructure/issues/37
+	b, err := json.Marshal(t.Payload)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, v)
 }
 
 // Ratus uses the BSON format to encode and decode data as it supports more
