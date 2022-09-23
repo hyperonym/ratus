@@ -3,10 +3,12 @@ package mongodb
 
 import (
 	"context"
+	"reflect"
 	"sync/atomic"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -93,10 +95,15 @@ func New(c *Config) (*Engine, error) {
 		fallbackUpsertPromise: &atomic.Int32{},
 	}
 
+	// By default, BSON documents will decode into interface values as bson.D.
+	// This custom registry maps bsontype.EmbeddedDocument entry to bson.M,
+	// which is more in line with the JSON marshaler/unmarshaler.
+	r := bson.NewRegistryBuilder().RegisterTypeMapEntry(bsontype.EmbeddedDocument, reflect.TypeOf(bson.M{})).Build()
+
 	// Create a new client without actually connecting to the deployment.
 	// Initialization processes that requires I/O should happen in Open.
 	var err error
-	g.client, err = mongo.NewClient(options.Client().ApplyURI(c.URI))
+	g.client, err = mongo.NewClient(options.Client().ApplyURI(c.URI).SetRegistry(r))
 	if err != nil {
 		return nil, err
 	}
