@@ -2,6 +2,7 @@ package memdb_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io/fs"
 	"os"
@@ -94,6 +95,7 @@ func TestSnapshot(t *testing.T) {
 			State:     ratus.TaskStatePending,
 			Scheduled: &n,
 			Consumed:  &n,
+			Payload:   "hello",
 		},
 		{
 			ID:        "2",
@@ -101,6 +103,7 @@ func TestSnapshot(t *testing.T) {
 			State:     ratus.TaskStatePending,
 			Scheduled: &n,
 			Consumed:  &n,
+			Payload:   3.14,
 		},
 	}); err != nil {
 		t.Fatal(err)
@@ -125,6 +128,14 @@ func TestSnapshot(t *testing.T) {
 			State:     ratus.TaskStatePending,
 			Scheduled: &n,
 			Consumed:  &n,
+			Payload: map[string]any{
+				"empty":  nil,
+				"bool":   true,
+				"int":    123,
+				"float":  3.14,
+				"string": "hello",
+				"array":  []any{1, 2, "a"},
+			},
 		}); err != nil {
 			t.Error(err)
 		}
@@ -154,6 +165,46 @@ func TestSnapshot(t *testing.T) {
 		}
 		if len(v) != 3 {
 			t.Errorf("incorrect number of results, expected %d, got %d", 3, len(v))
+		}
+		if v, err := u.GetTask(ctx, "1"); err == nil {
+			var p string
+			if err := v.Decode(&p); err != nil {
+				t.Error(err)
+			}
+			if p != "hello" {
+				t.Fail()
+			}
+		} else {
+			t.Error(err)
+		}
+		if v, err := u.GetTask(ctx, "2"); err == nil {
+			var p float32
+			if err := v.Decode(&p); err != nil {
+				t.Error(err)
+			}
+			if p != 3.14 {
+				t.Fail()
+			}
+		} else {
+			t.Error(err)
+		}
+		if v, err := u.GetTask(ctx, "3"); err == nil {
+			var p map[string]any
+			if err := v.Decode(&p); err != nil {
+				t.Error(err)
+			}
+			b, _ := json.Marshal(p)
+			s := string(b)
+			if !strings.Contains(s, `"array":[1,2,"a"]`) ||
+				!strings.Contains(s, `"bool":true`) ||
+				!strings.Contains(s, `"empty":null`) ||
+				!strings.Contains(s, `"float":3.14`) ||
+				!strings.Contains(s, `"int":123`) ||
+				!strings.Contains(s, `"string":"hello"`) {
+				t.Fail()
+			}
+		} else {
+			t.Error(err)
 		}
 		if err := u.Destroy(ctx); err != nil {
 			t.Error(err)
