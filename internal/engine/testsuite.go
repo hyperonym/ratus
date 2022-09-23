@@ -1,7 +1,9 @@
 package engine
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync/atomic"
@@ -924,6 +926,74 @@ func Test(t *testing.T, g Engine) {
 			}
 			if d.Deleted != 4 {
 				t.Errorf("incorrect number of deletions, expected 4, got %d", d.Deleted)
+			}
+		})
+	})
+
+	// Test operations that encode and decode payloads.
+	t.Run("payload", func(t *testing.T) {
+		n := time.Now()
+		m := map[string]any{
+			"empty":  nil,
+			"bool":   true,
+			"int":    123,
+			"float":  3.14,
+			"string": "hello",
+			"array":  []any{1, 2, "a"},
+			"nested": map[string]any{
+				"empty":  nil,
+				"bool":   true,
+				"int":    123,
+				"float":  3.14,
+				"string": "hello",
+				"array":  []any{1, 2, "a"},
+			},
+		}
+		for _, x := range []struct {
+			name string
+			task *ratus.Task
+		}{
+			{"empty", &ratus.Task{ID: "1", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n}},
+			{"bool", &ratus.Task{ID: "2", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: true}},
+			{"int", &ratus.Task{ID: "3", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: 123}},
+			{"float", &ratus.Task{ID: "4", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: 3.14}},
+			{"string", &ratus.Task{ID: "5", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: "hello"}},
+			{"array", &ratus.Task{ID: "6", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: []any{1, 2, "a"}}},
+			{"nested", &ratus.Task{ID: "7", Topic: "test", State: ratus.TaskStateActive, Scheduled: &n, Payload: m}},
+		} {
+			p := x
+			t.Run(p.name, func(t *testing.T) {
+				if _, err := g.InsertTask(ctx, p.task); err != nil {
+					t.Error(err)
+				}
+				v, err := g.GetTask(ctx, p.task.ID)
+				if err != nil {
+					t.Error()
+				}
+				if v.ID != p.task.ID {
+					t.Fail()
+				}
+				if v.State != p.task.State {
+					t.Fail()
+				}
+				if !v.Scheduled.Round(time.Millisecond * 10).Equal(p.task.Scheduled.Round(time.Millisecond * 10)) {
+					t.Errorf("incorrect scheduled time, expected %v, got %v", p.task.Scheduled, v.Scheduled)
+				}
+				e, _ := json.Marshal(p.task.Payload)
+				a, _ := json.Marshal(v.Payload)
+				if !bytes.Equal(e, a) {
+					t.Errorf("incorrect payload, expected %s, got %s", string(e), string(a))
+				}
+			})
+		}
+
+		t.Run("clean", func(t *testing.T) {
+			d, err := g.DeleteTopics(ctx)
+			if err != nil {
+				t.Error(err)
+			}
+			if d.Deleted != 7 {
+				t.Errorf("incorrect number of deletions, expected 7, got %d", d.Deleted)
 			}
 		})
 	})
