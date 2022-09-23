@@ -3,6 +3,7 @@ package ratus
 
 import (
 	"context"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -48,6 +49,13 @@ var (
 	// ErrServiceUnavailable is returned when the service is unavailable.
 	ErrServiceUnavailable = errors.New("service unavailable")
 )
+
+// init registers interface types for binary encoding and decoding.
+func init() {
+	gob.Register([]interface{}{})
+	gob.Register(map[string]interface{}{})
+	gob.Register([]map[string]interface{}{})
+}
 
 // TaskState indicates the state of a task.
 type TaskState int32
@@ -176,16 +184,6 @@ func (t *Task) UnmarshalBSON(data []byte) error {
 	}
 	*t = Task(a)
 	return nil
-}
-
-// MarshalBinary implements the encoding.BinaryMarshaler interface.
-func (t *Task) MarshalBinary() ([]byte, error) {
-	return bson.Marshal(t)
-}
-
-// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface.
-func (t *Task) UnmarshalBinary(data []byte) error {
-	return bson.Unmarshal(data, t)
 }
 
 // Promise represents a claim on the ownership of an active task.
