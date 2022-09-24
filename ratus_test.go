@@ -171,6 +171,15 @@ func TestDecode(t *testing.T) {
 			t.Fail()
 		}
 	})
+
+	t.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+		var p func()
+		v := ratus.Task{Payload: func() {}}
+		if err := v.Decode(&p); err == nil {
+			t.Fail()
+		}
+	})
 }
 
 func TestError(t *testing.T) {
