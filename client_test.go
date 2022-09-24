@@ -2,7 +2,10 @@ package ratus_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
@@ -16,17 +19,16 @@ import (
 	"github.com/hyperonym/ratus/internal/router"
 )
 
-func newClient(t *testing.T, err error) *ratus.Client {
+func newClient(t *testing.T, g *stub.Engine) *ratus.Client {
 	t.Helper()
-	g := stub.Engine{Err: err}
 	o := config.PaginationConfig{MaxLimit: 10, MaxOffset: 10}
 	r := router.New(&controller.V1{
 		Pagination: middleware.Pagination(&o),
-		Topic:      controller.NewTopicController(&g),
-		Task:       controller.NewTaskController(&g),
-		Promise:    controller.NewPromiseController(&g),
-		Health:     controller.NewHealthController(&g),
-		Metrics:    controller.NewMetricsController(&g),
+		Topic:      controller.NewTopicController(g),
+		Task:       controller.NewTaskController(g),
+		Promise:    controller.NewPromiseController(g),
+		Health:     controller.NewHealthController(g),
+		Metrics:    controller.NewMetricsController(g),
 	})
 	ts := httptest.NewServer(r.Handler())
 	t.Cleanup(func() {
@@ -46,7 +48,7 @@ func TestClient(t *testing.T) {
 	t.Run("normal", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()
-		client := newClient(t, nil)
+		client := newClient(t, &stub.Engine{})
 
 		t.Run("subscribe", func(t *testing.T) {
 			t.Parallel()
@@ -126,7 +128,7 @@ func TestClient(t *testing.T) {
 	t.Run("unavailable", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()
-		client := newClient(t, ratus.ErrServiceUnavailable)
+		client := newClient(t, &stub.Engine{Err: ratus.ErrServiceUnavailable})
 
 		t.Run("subscribe", func(t *testing.T) {
 			t.Parallel()
@@ -222,7 +224,7 @@ func TestClient(t *testing.T) {
 		t.Run("cancel", func(t *testing.T) {
 			t.Parallel()
 			ctx, cancel := context.WithCancel(context.Background())
-			client := newClient(t, nil)
+			client := newClient(t, &stub.Engine{})
 
 			var a atomic.Int32
 			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
@@ -236,6 +238,89 @@ func TestClient(t *testing.T) {
 				t.Error(err)
 			}
 			if a.Load() != 2 {
+				t.Fail()
+			}
+		})
+
+		t.Run("drain", func(t *testing.T) {
+			t.Parallel()
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+				w.Header().Add("Content-Type", "application/json")
+				e := ratus.NewError(ratus.ErrNotFound)
+				b, _ := json.Marshal(e)
+				fmt.Fprintln(w, string(b))
+			}))
+			defer ts.Close()
+
+			client, err := ratus.NewClient(&ratus.ClientOptions{Origin: ts.URL})
+			if err != nil {
+				t.Error(err)
+			}
+
+			var a atomic.Int32
+			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
+				Promise:          &ratus.Promise{Timeout: "30s"},
+				Topic:            "topic",
+				Concurrency:      1,
+				ConcurrencyDelay: 1 * time.Microsecond,
+				PollInterval:     1 * time.Millisecond,
+				DrainInterval:    1 * time.Millisecond,
+				ErrorInterval:    1 * time.Millisecond,
+			}, func(c *ratus.Context, err error) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				a.Add(1)
+			}); !errors.Is(err, context.DeadlineExceeded) {
+				t.Error(err)
+			}
+			if a.Load() != 0 {
+				t.Fail()
+			}
+		})
+
+		t.Run("request", func(t *testing.T) {
+			t.Parallel()
+			ctx := context.Background()
+			client := newClient(t, &stub.Engine{})
+
+			t.Run("method", func(t *testing.T) {
+				t.Parallel()
+				if err := client.Request(ctx, "?", "/", nil, nil); err == nil {
+					t.Fail()
+				}
+			})
+
+			t.Run("body", func(t *testing.T) {
+				t.Parallel()
+				if err := client.Request(ctx, "POST", "/", func() {}, nil); err == nil {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("response", func(t *testing.T) {
+			t.Parallel()
+			ctx := context.Background()
+
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusServiceUnavailable)
+				w.Header().Add("Content-Type", "application/json")
+				fmt.Fprintln(w, ".")
+			}))
+			defer ts.Close()
+
+			client, err := ratus.NewClient(&ratus.ClientOptions{Origin: ts.URL})
+			if err != nil {
+				t.Error(err)
+			}
+
+			if err := client.Request(ctx, "GET", "/", nil, nil); err == nil {
 				t.Fail()
 			}
 		})
