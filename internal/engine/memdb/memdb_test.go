@@ -62,7 +62,7 @@ func TestConfig(t *testing.T) {
 func TestSuite(t *testing.T) {
 	skipShort(t)
 	g, err := memdb.New(&memdb.Config{
-		RetentionPeriod: 1 * time.Second,
+		RetentionPeriod: 10 * time.Minute,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -219,7 +219,7 @@ func TestExpire(t *testing.T) {
 	skipShort(t)
 	ctx := context.Background()
 	g, err := memdb.New(&memdb.Config{
-		RetentionPeriod: 1 * time.Second,
+		RetentionPeriod: 100 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -232,8 +232,8 @@ func TestExpire(t *testing.T) {
 	}
 
 	n := time.Now()
-	n1 := n.Add(1 * time.Second)
-	n2 := n.Add(2 * time.Second)
+	n1 := n.Add(100 * time.Millisecond)
+	n2 := n.Add(200 * time.Millisecond)
 	if _, err := g.InsertTasks(ctx, []*ratus.Task{
 		{
 			ID:        "1",
@@ -263,7 +263,7 @@ func TestExpire(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		if i > 0 {
-			time.Sleep(1 * time.Second)
+			time.Sleep(100 * time.Millisecond)
 		}
 		if err := g.Chore(ctx); err != nil {
 			t.Error(err)
