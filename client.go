@@ -127,44 +127,49 @@ func (c *Client) Subscribe(ctx context.Context, o *SubscribeOptions, f Subscribe
 	// Start polling goroutines with a delay between each two to avoid spikes.
 	e, ctx := errgroup.WithContext(ctx)
 	for i := 0; i < n; i++ {
-		time.Sleep(cd)
+		d := cd * time.Duration(i)
 		e.Go(func() error {
+			r := time.NewTimer(d)
+			xc := make(chan *Context, 1)
+			ec := make(chan error, 1)
+			for {
+				select {
+				case <-ctx.Done():
+					r.Stop()
+					return ctx.Err()
+				case <-r.C:
+					x, err := c.Poll(ctx, o.Topic, p)
+					if err != nil {
+						ec <- err
+						break
+					}
+					xc <- x
+				case x := <-xc:
+					f(x, nil)
 
-			// Repeat polling until the context times out or gets canceled.
-			for ctx.Err() == nil {
-
-				// Get the next available task in the topic.
-				x, err := c.Poll(ctx, o.Topic, p)
-				if err != nil {
+					// Automatically commit the updates if no commit has been
+					// made explicitly in the handler function.
+					if err := x.Commit(); err != nil {
+						ec <- err
+						break
+					}
+					r.Reset(o.PollInterval)
+				case err := <-ec:
 
 					// The topic has been emptied or no task has reached its
 					// scheduled time of execution, then poll again later.
 					if errors.Is(err, ErrNotFound) {
-						time.Sleep(dd)
-						continue
+						r.Reset(dd)
+						break
 					}
 
 					// Handle unexpected errors.
-					f(nil, err)
-					time.Sleep(ed)
-					continue
+					if ctx.Err() == nil {
+						f(nil, err)
+						r.Reset(ed)
+					}
 				}
-
-				// Call the handler function to execute the task.
-				f(x, nil)
-
-				// Automatically commit the updates if no commit has been made
-				// by the user explicitly.
-				if err := x.Commit(); err != nil {
-					f(nil, err)
-					time.Sleep(ed)
-				}
-
-				// Pause before the next poll if required.
-				time.Sleep(o.PollInterval)
 			}
-
-			return ctx.Err()
 		})
 	}
 

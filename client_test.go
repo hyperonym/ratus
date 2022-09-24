@@ -52,13 +52,14 @@ func TestClient(t *testing.T) {
 
 		t.Run("subscribe", func(t *testing.T) {
 			t.Parallel()
-			ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, 150*time.Millisecond)
 			defer cancel()
 
 			var a atomic.Int32
 			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
-				Promise: &ratus.Promise{Timeout: "30s"},
-				Topic:   "topic",
+				Promise:      &ratus.Promise{Timeout: "30s"},
+				Topic:        "topic",
+				PollInterval: 100 * time.Millisecond,
 			}, func(c *ratus.Context, err error) {
 				if err != nil {
 					t.Error(err)
@@ -68,11 +69,10 @@ func TestClient(t *testing.T) {
 				if err := c.Commit(); err != nil {
 					t.Error(err)
 				}
-				time.Sleep(1 * time.Second)
 			}); !errors.Is(err, context.DeadlineExceeded) {
 				t.Error(err)
 			}
-			if a.Load() <= 0 {
+			if a.Load() != 2 {
 				t.Fail()
 			}
 		})
@@ -132,14 +132,14 @@ func TestClient(t *testing.T) {
 
 		t.Run("subscribe", func(t *testing.T) {
 			t.Parallel()
-			ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			ctx, cancel := context.WithTimeout(ctx, 150*time.Millisecond)
 			defer cancel()
 
 			var a atomic.Int32
 			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
 				Promise:       &ratus.Promise{Timeout: "30s"},
 				Topic:         "topic",
-				ErrorInterval: time.Duration(1 * time.Second),
+				ErrorInterval: time.Duration(100 * time.Millisecond),
 			}, func(c *ratus.Context, err error) {
 				if err == nil {
 					t.Fail()
@@ -148,7 +148,7 @@ func TestClient(t *testing.T) {
 			}); !errors.Is(err, context.DeadlineExceeded) {
 				t.Error(err)
 			}
-			if a.Load() <= 0 {
+			if a.Load() != 2 {
 				t.Fail()
 			}
 		})
@@ -230,21 +230,25 @@ func TestClient(t *testing.T) {
 			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
 				Promise:       &ratus.Promise{Timeout: "30s"},
 				Topic:         "topic",
-				ErrorInterval: time.Duration(1 * time.Second),
+				ErrorInterval: time.Duration(100 * time.Millisecond),
 			}, func(c *ratus.Context, err error) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
 				a.Add(1)
 				cancel()
 			}); !errors.Is(err, context.Canceled) {
 				t.Error(err)
 			}
-			if a.Load() != 2 {
+			if a.Load() != 1 {
 				t.Fail()
 			}
 		})
 
 		t.Run("drain", func(t *testing.T) {
 			t.Parallel()
-			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
 			defer cancel()
 
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -268,7 +272,7 @@ func TestClient(t *testing.T) {
 				Concurrency:      1,
 				ConcurrencyDelay: 1 * time.Microsecond,
 				PollInterval:     1 * time.Millisecond,
-				DrainInterval:    1 * time.Millisecond,
+				DrainInterval:    100 * time.Millisecond,
 				ErrorInterval:    1 * time.Millisecond,
 			}, func(c *ratus.Context, err error) {
 				if err != nil {
