@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/hyperonym/ratus"
 	"github.com/hyperonym/ratus/internal/config"
 	"github.com/hyperonym/ratus/internal/controller"
@@ -45,6 +47,8 @@ func newClient(t *testing.T, g *stub.Engine) *ratus.Client {
 }
 
 func TestClient(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
+
 	t.Run("normal", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()
