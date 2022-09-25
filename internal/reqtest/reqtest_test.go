@@ -11,6 +11,7 @@ import (
 )
 
 func TestStub(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
 	h := reqtest.NewHandler(&reqtest.StubGroup{})
 
 	t.Run("get", func(t *testing.T) {
