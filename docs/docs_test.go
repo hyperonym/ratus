@@ -5,11 +5,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/hyperonym/ratus/docs"
 	"github.com/hyperonym/ratus/internal/reqtest"
 )
 
 func TestSwagger(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
 	h := reqtest.NewHandler(&docs.Swagger{})
 
 	t.Run("index", func(t *testing.T) {
