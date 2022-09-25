@@ -65,6 +65,7 @@ func (g *group) Mount(r *gin.RouterGroup) {
 }
 
 func TestMiddleware(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
 	h := reqtest.NewHandler(&group{})
 
 	t.Run("prometheus", func(t *testing.T) {
