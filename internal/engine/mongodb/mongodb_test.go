@@ -155,8 +155,7 @@ func TestIndex(t *testing.T) {
 		}
 	})
 
-	// Give the MongoDB server some time to complete background tasks.
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	t.Run("create", func(t *testing.T) {
 		ctx := context.Background()
@@ -183,6 +182,8 @@ func TestIndex(t *testing.T) {
 			t.Fatal(err)
 		}
 	})
+
+	time.Sleep(500 * time.Millisecond)
 
 	t.Run("change", func(t *testing.T) {
 		ctx := context.Background()
