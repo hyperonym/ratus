@@ -24,6 +24,9 @@ import (
 // in the package of the specific engine.
 func Test(t *testing.T, g Engine) {
 	ctx := context.Background()
+	if err := g.Ready(ctx); !errors.Is(err, ratus.ErrServiceUnavailable) {
+		t.Errorf("incorrect error type, expected %q, got %q", ratus.ErrServiceUnavailable, err)
+	}
 	if err := g.Open(ctx); err != nil {
 		t.Fatal(err)
 	}
