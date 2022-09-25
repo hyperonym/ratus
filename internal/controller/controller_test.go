@@ -5,6 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/hyperonym/ratus"
 	"github.com/hyperonym/ratus/internal/config"
 	"github.com/hyperonym/ratus/internal/controller"
@@ -14,6 +16,8 @@ import (
 )
 
 func TestController(t *testing.T) {
+	gin.SetMode(gin.ReleaseMode)
+
 	t.Run("v1", func(t *testing.T) {
 		t.Parallel()
 
