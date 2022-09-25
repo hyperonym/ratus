@@ -12,7 +12,7 @@ import (
 )
 
 func TestRouter(t *testing.T) {
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.TestMode)
 	h := router.New(&reqtest.StubGroup{}).Handler()
 
 	t.Run("root", func(t *testing.T) {
