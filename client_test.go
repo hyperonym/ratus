@@ -92,163 +92,305 @@ func TestClient(t *testing.T) {
 			}
 		})
 
-		for _, x := range []struct {
-			name string
-			test func() (any, error)
-		}{
-			{"list-topics", func() (any, error) { return client.ListTopics(ctx, 10, 0) }},
-			{"delete-topics", func() (any, error) { return client.DeleteTopics(ctx) }},
-			{"get-topic", func() (any, error) { return client.GetTopic(ctx, "topic") }},
-			{"delete-topic", func() (any, error) { return client.DeleteTopic(ctx, "topic") }},
-			{"list-tasks", func() (any, error) { return client.ListTasks(ctx, "topic", 10, 0) }},
-			{"insert-tasks", func() (any, error) { return client.InsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) }},
-			{"upsert-tasks", func() (any, error) { return client.UpsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) }},
-			{"delete-tasks", func() (any, error) { return client.DeleteTasks(ctx, "topic") }},
-			{"get-task", func() (any, error) { return client.GetTask(ctx, "id") }},
-			{"insert-task", func() (any, error) { return client.InsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) }},
-			{"upsert-task", func() (any, error) { return client.UpsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) }},
-			{"delete-task", func() (any, error) { return client.DeleteTask(ctx, "id") }},
-			{"patch-task", func() (any, error) { return client.PatchTask(ctx, "id", &ratus.Commit{}) }},
-			{"list-promises", func() (any, error) { return client.ListPromises(ctx, "topic", 10, 0) }},
-			{"post-promises", func() (any, error) { return client.PostPromises(ctx, "topic", &ratus.Promise{}) }},
-			{"delete-promises", func() (any, error) { return client.DeletePromises(ctx, "topic") }},
-			{"get-promise", func() (any, error) { return client.GetPromise(ctx, "id") }},
-			{"insert-promise", func() (any, error) { return client.InsertPromise(ctx, &ratus.Promise{ID: "id"}) }},
-			{"upsert-promise", func() (any, error) { return client.UpsertPromise(ctx, &ratus.Promise{ID: "id"}) }},
-			{"delete-promise", func() (any, error) { return client.DeletePromise(ctx, "id") }},
-			{"get-liveness", func() (any, error) { return nil, client.GetLiveness(ctx) }},
-			{"get-readiness", func() (any, error) { return nil, client.GetReadiness(ctx) }},
-		} {
-			q := x
-			t.Run(q.name, func(t *testing.T) {
+		t.Run("topics", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
 				t.Parallel()
-				if _, err := q.test(); err != nil {
+				v, err := client.ListTopics(ctx, 10, 0)
+				if err != nil {
+					t.Error(err)
+				}
+				if len(v) == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeleteTopics(ctx)
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("topic", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.GetTopic(ctx, "topic")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Count == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeleteTopic(ctx, "topic")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("tasks", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.ListTasks(ctx, "topic", 10, 0)
+				if err != nil {
+					t.Error(err)
+				}
+				if len(v) == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("post", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.InsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Created == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("put", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.UpsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Updated == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeleteTasks(ctx, "topic")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("task", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.GetTask(ctx, "id")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.ID != "id" {
+					t.Fail()
+				}
+			})
+
+			t.Run("post", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.InsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Created == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("put", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.UpsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Updated == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeleteTask(ctx, "id")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("patch", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.PatchTask(ctx, "id", &ratus.Commit{})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.ID != "id" {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("promises", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.ListPromises(ctx, "topic", 10, 0)
+				if err != nil {
+					t.Error(err)
+				}
+				if len(v) == 0 {
+					t.Fail()
+				}
+			})
+
+			t.Run("post", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.PostPromises(ctx, "topic", &ratus.Promise{})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Topic != "topic" {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeletePromises(ctx, "topic")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("promise", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("get", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.GetPromise(ctx, "id")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.ID != "id" {
+					t.Fail()
+				}
+			})
+
+			t.Run("post", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.InsertPromise(ctx, &ratus.Promise{ID: "id"})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.State != ratus.TaskStateActive {
+					t.Fail()
+				}
+			})
+
+			t.Run("put", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.UpsertPromise(ctx, &ratus.Promise{ID: "id"})
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.State != ratus.TaskStateActive {
+					t.Fail()
+				}
+			})
+
+			t.Run("delete", func(t *testing.T) {
+				t.Parallel()
+				v, err := client.DeletePromise(ctx, "id")
+				if err != nil {
+					t.Error(err)
+				}
+				if v == nil || v.Deleted == 0 {
+					t.Fail()
+				}
+			})
+		})
+
+		t.Run("health", func(t *testing.T) {
+			t.Parallel()
+
+			t.Run("livez", func(t *testing.T) {
+				t.Parallel()
+				if err := client.GetLiveness(ctx); err != nil {
 					t.Error(err)
 				}
 			})
-		}
+
+			t.Run("readyz", func(t *testing.T) {
+				t.Parallel()
+				if err := client.GetReadiness(ctx); err != nil {
+					t.Error(err)
+				}
+			})
+		})
 	})
 
 	t.Run("unavailable", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()
 		client := newClient(t, &stub.Engine{Err: ratus.ErrServiceUnavailable})
-
-		t.Run("subscribe", func(t *testing.T) {
-			t.Parallel()
-			ctx, cancel := context.WithTimeout(ctx, 150*time.Millisecond)
-			defer cancel()
-
-			var a atomic.Int32
-			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
-				Promise:       &ratus.Promise{Timeout: "30s"},
-				Topic:         "topic",
-				ErrorInterval: time.Duration(100 * time.Millisecond),
-			}, func(c *ratus.Context, err error) {
-				if err == nil {
-					t.Fail()
-				}
-				a.Add(1)
-			}); !errors.Is(err, context.DeadlineExceeded) {
-				t.Error(err)
-			}
-			if a.Load() != 2 {
+		for _, f := range []func() (any, error){
+			func() (any, error) { return client.Poll(ctx, "topic", &ratus.Promise{Timeout: "30s"}) },
+			func() (any, error) { return client.ListTopics(ctx, 10, 0) },
+			func() (any, error) { return client.DeleteTopics(ctx) },
+			func() (any, error) { return client.GetTopic(ctx, "topic") },
+			func() (any, error) { return client.DeleteTopic(ctx, "topic") },
+			func() (any, error) { return client.ListTasks(ctx, "topic", 10, 0) },
+			func() (any, error) { return client.InsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) },
+			func() (any, error) { return client.UpsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) },
+			func() (any, error) { return client.DeleteTasks(ctx, "topic") },
+			func() (any, error) { return client.GetTask(ctx, "id") },
+			func() (any, error) { return client.InsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) },
+			func() (any, error) { return client.UpsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) },
+			func() (any, error) { return client.DeleteTask(ctx, "id") },
+			func() (any, error) { return client.PatchTask(ctx, "id", &ratus.Commit{}) },
+			func() (any, error) { return client.ListPromises(ctx, "topic", 10, 0) },
+			func() (any, error) { return client.PostPromises(ctx, "topic", &ratus.Promise{}) },
+			func() (any, error) { return client.DeletePromises(ctx, "topic") },
+			func() (any, error) { return client.GetPromise(ctx, "id") },
+			func() (any, error) { return client.InsertPromise(ctx, &ratus.Promise{ID: "id"}) },
+			func() (any, error) { return client.UpsertPromise(ctx, &ratus.Promise{ID: "id"}) },
+			func() (any, error) { return client.DeletePromise(ctx, "id") },
+			func() (any, error) { return nil, client.GetReadiness(ctx) },
+		} {
+			if _, err := f(); !errors.Is(err, ratus.ErrServiceUnavailable) {
 				t.Fail()
 			}
-		})
-
-		for _, x := range []struct {
-			name string
-			test func() (any, error)
-		}{
-			{"poll", func() (any, error) { return client.Poll(ctx, "topic", &ratus.Promise{Timeout: "30s"}) }},
-			{"list-topics", func() (any, error) { return client.ListTopics(ctx, 10, 0) }},
-			{"delete-topics", func() (any, error) { return client.DeleteTopics(ctx) }},
-			{"get-topic", func() (any, error) { return client.GetTopic(ctx, "topic") }},
-			{"delete-topic", func() (any, error) { return client.DeleteTopic(ctx, "topic") }},
-			{"list-tasks", func() (any, error) { return client.ListTasks(ctx, "topic", 10, 0) }},
-			{"insert-tasks", func() (any, error) { return client.InsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) }},
-			{"upsert-tasks", func() (any, error) { return client.UpsertTasks(ctx, []*ratus.Task{{ID: "id", Topic: "topic"}}) }},
-			{"delete-tasks", func() (any, error) { return client.DeleteTasks(ctx, "topic") }},
-			{"get-task", func() (any, error) { return client.GetTask(ctx, "id") }},
-			{"insert-task", func() (any, error) { return client.InsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) }},
-			{"upsert-task", func() (any, error) { return client.UpsertTask(ctx, &ratus.Task{ID: "id", Topic: "topic"}) }},
-			{"delete-task", func() (any, error) { return client.DeleteTask(ctx, "id") }},
-			{"patch-task", func() (any, error) { return client.PatchTask(ctx, "id", &ratus.Commit{}) }},
-			{"list-promises", func() (any, error) { return client.ListPromises(ctx, "topic", 10, 0) }},
-			{"post-promises", func() (any, error) { return client.PostPromises(ctx, "topic", &ratus.Promise{}) }},
-			{"delete-promises", func() (any, error) { return client.DeletePromises(ctx, "topic") }},
-			{"get-promise", func() (any, error) { return client.GetPromise(ctx, "id") }},
-			{"insert-promise", func() (any, error) { return client.InsertPromise(ctx, &ratus.Promise{ID: "id"}) }},
-			{"upsert-promise", func() (any, error) { return client.UpsertPromise(ctx, &ratus.Promise{ID: "id"}) }},
-			{"delete-promise", func() (any, error) { return client.DeletePromise(ctx, "id") }},
-			{"get-readiness", func() (any, error) { return nil, client.GetReadiness(ctx) }},
-		} {
-			q := x
-			t.Run(q.name, func(t *testing.T) {
-				t.Parallel()
-				if _, err := q.test(); !errors.Is(err, ratus.ErrServiceUnavailable) {
-					t.Fail()
-				}
-			})
 		}
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.Run("event", func(t *testing.T) {
 		t.Parallel()
-
-		t.Run("origin", func(t *testing.T) {
-			t.Parallel()
-			if _, err := ratus.NewClient(&ratus.ClientOptions{Origin: "*://*://"}); err == nil {
-				t.Fail()
-			}
-		})
-
-		t.Run("context", func(t *testing.T) {
-			t.Parallel()
-			var c ratus.Context
-			c.Task = &ratus.Task{}
-			c.SetNonce("")
-			c.SetTopic("")
-			c.SetState(ratus.TaskStatePending)
-			c.SetScheduled(time.Now())
-			c.SetPayload("")
-			c.SetDefer("")
-			c.Force()
-			c.Abstain()
-			c.Archive()
-			c.Reschedule(time.Now())
-			c.Retry("")
-			c.Reset()
-			if err := c.Commit(); err == nil {
-				t.Fail()
-			}
-		})
-
-		t.Run("cancel", func(t *testing.T) {
-			t.Parallel()
-			ctx, cancel := context.WithCancel(context.Background())
-			client := newClient(t, &stub.Engine{})
-
-			var a atomic.Int32
-			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
-				Promise:       &ratus.Promise{Timeout: "30s"},
-				Topic:         "topic",
-				ErrorInterval: time.Duration(100 * time.Millisecond),
-			}, func(c *ratus.Context, err error) {
-				if err != nil {
-					t.Error(err)
-					return
-				}
-				a.Add(1)
-				cancel()
-			}); !errors.Is(err, context.Canceled) {
-				t.Error(err)
-			}
-			if a.Load() != 1 {
-				t.Fail()
-			}
-		})
 
 		t.Run("drain", func(t *testing.T) {
 			t.Parallel()
@@ -288,6 +430,88 @@ func TestClient(t *testing.T) {
 				t.Error(err)
 			}
 			if a.Load() != 0 {
+				t.Fail()
+			}
+		})
+
+		t.Run("error", func(t *testing.T) {
+			t.Parallel()
+			ctx, cancel := context.WithTimeout(context.Background(), 150*time.Millisecond)
+			defer cancel()
+
+			client := newClient(t, &stub.Engine{Err: ratus.ErrInternalServerError})
+
+			var a atomic.Int32
+			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
+				Promise:       &ratus.Promise{Timeout: "30s"},
+				Topic:         "topic",
+				ErrorInterval: time.Duration(100 * time.Millisecond),
+			}, func(c *ratus.Context, err error) {
+				if err == nil {
+					t.Fail()
+				}
+				a.Add(1)
+			}); !errors.Is(err, context.DeadlineExceeded) {
+				t.Error(err)
+			}
+			if a.Load() != 2 {
+				t.Fail()
+			}
+		})
+
+		t.Run("cancel", func(t *testing.T) {
+			t.Parallel()
+			ctx, cancel := context.WithCancel(context.Background())
+			client := newClient(t, &stub.Engine{})
+
+			var a atomic.Int32
+			if err := client.Subscribe(ctx, &ratus.SubscribeOptions{
+				Promise:       &ratus.Promise{Timeout: "30s"},
+				Topic:         "topic",
+				ErrorInterval: time.Duration(100 * time.Millisecond),
+			}, func(c *ratus.Context, err error) {
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				a.Add(1)
+				cancel()
+			}); !errors.Is(err, context.Canceled) {
+				t.Error(err)
+			}
+			if a.Load() != 1 {
+				t.Fail()
+			}
+		})
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("origin", func(t *testing.T) {
+			t.Parallel()
+			if _, err := ratus.NewClient(&ratus.ClientOptions{Origin: "*://*://"}); err == nil {
+				t.Fail()
+			}
+		})
+
+		t.Run("context", func(t *testing.T) {
+			t.Parallel()
+			var c ratus.Context
+			c.Task = &ratus.Task{}
+			c.SetNonce("")
+			c.SetTopic("")
+			c.SetState(ratus.TaskStatePending)
+			c.SetScheduled(time.Now())
+			c.SetPayload("")
+			c.SetDefer("")
+			c.Force()
+			c.Abstain()
+			c.Archive()
+			c.Reschedule(time.Now())
+			c.Retry("")
+			c.Reset()
+			if err := c.Commit(); err == nil {
 				t.Fail()
 			}
 		})
