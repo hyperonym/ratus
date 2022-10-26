@@ -285,7 +285,6 @@ For more details, see [Architectural Decision Records](https://github.com/hypero
 		- [x] Ephemeral
 		- [x] Persistence with snapshots
 		- [ ] Persistence with AOF
-		- [ ] New implementation based on generics
 	- [x] MongoDB
 		- [x] Standalone
 		- [x] Replica set
