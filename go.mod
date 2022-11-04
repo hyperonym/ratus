@@ -9,7 +9,7 @@ require (
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/hashicorp/go-memdb v1.3.4
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	go.mongodb.org/mongo-driver v1.11.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 )
