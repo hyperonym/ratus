@@ -9,7 +9,7 @@ require (
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/hashicorp/go-memdb v1.3.4
-	github.com/prometheus/client_golang v1.13.1
+	github.com/prometheus/client_golang v1.14.0
 	go.mongodb.org/mongo-driver v1.11.0
 	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f
 )
@@ -37,7 +37,7 @@ require (
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
