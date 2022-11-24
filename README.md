@@ -299,7 +299,6 @@ For more details, see [Architectural Decision Records](https://github.com/hypero
 	- [ ] Message broker
 		- [ ] RabbitMQ
 		- [ ] Amazon SQS
-- [ ] Benchmark different workloads
 - [ ] Multi-language documents
 	- [x] English
 	- [ ] Chinese
