@@ -317,4 +317,4 @@ Ratus is available under the [Mozilla Public License Version 2.0](https://github
 
 ---
 
-© 2022 [Hyperonym](https://hyperonym.org)
+© 2022-2023 [Hyperonym](https://hyperonym.org)
