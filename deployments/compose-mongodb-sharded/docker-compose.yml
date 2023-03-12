@@ -40,7 +40,7 @@ services:
       MONGODB_REPLICA_SET_NAME: "cfgreplicaset"
 
   ratus:
-    image: hyperonym/ratus:0.6.1
+    image: hyperonym/ratus:0.6.2
     restart: unless-stopped
     depends_on:
       - mongodb-sharded
