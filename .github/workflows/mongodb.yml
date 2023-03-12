@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        mongodb-version: ['4.4', '5.0', '6.0']
+        mongodb-version: ["4.4", "5.0", "6.0"]
     defaults:
       run:
         working-directory: main
@@ -24,8 +24,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version-file: 'main/go.mod'
+          go-version-file: "main/go.mod"
           check-latest: true
+          cache: true
+          cache-dependency-path: "main/go.sum"
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.9.0
         with:
