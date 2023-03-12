@@ -27,6 +27,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
           check-latest: true
           cache: true
+          cache-dependency-path: "main/go.sum"
       - name: Test packages
         run: make test-short
       - name: Build artifacts
