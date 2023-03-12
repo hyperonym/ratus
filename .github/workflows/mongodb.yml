@@ -26,6 +26,7 @@ jobs:
         with:
           go-version-file: 'main/go.mod'
           check-latest: true
+          cache: true
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.9.0
         with:
