@@ -44,15 +44,15 @@ clean:
 
 .PHONY: docker-%
 docker-%: build-%
-	@docker build --platform=$(subst -,/,$*) --tag $(DOCKER_HUB_IMAGE)-$* .
+	@docker build --platform $(subst -,/,$*) --tag $(DOCKER_HUB_IMAGE)-$* .
 
 .PHONY: docker-hub
 docker-hub: $(foreach t,$(subst $(comma), ,$(TARGET_CONTAINER_PLATFORMS)),build-$(subst /,-,$(t)))
-	@docker buildx build --push --platform=$(TARGET_CONTAINER_PLATFORMS) --tag $(DOCKER_HUB_IMAGE) .
+	@docker buildx build --push --platform $(TARGET_CONTAINER_PLATFORMS) --tag $(DOCKER_HUB_IMAGE) .
 
 .PHONY: github-packages
 github-packages: $(foreach t,$(subst $(comma), ,$(TARGET_CONTAINER_PLATFORMS)),build-$(subst /,-,$(t)))
-	@docker buildx build --push --platform=$(TARGET_CONTAINER_PLATFORMS) --tag $(GITHUB_PACKAGES_IMAGE) .
+	@docker buildx build --push --platform $(TARGET_CONTAINER_PLATFORMS) --tag $(GITHUB_PACKAGES_IMAGE) .
 
 .PHONY: github-release
 github-release: changelog
