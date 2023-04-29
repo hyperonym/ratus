@@ -7,7 +7,7 @@ services:
       - "27017:27017"
 
   ratus:
-    image: hyperonym/ratus:0.6.2
+    image: hyperonym/ratus:0.6.3
     restart: unless-stopped
     depends_on:
       - mongo
