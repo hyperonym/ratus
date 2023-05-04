@@ -10,7 +10,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/hashicorp/go-memdb v1.3.4
 	github.com/prometheus/client_golang v1.15.0
-	go.mongodb.org/mongo-driver v1.11.4
+	go.mongodb.org/mongo-driver v1.11.5
 	golang.org/x/sync v0.1.0
 )
 
