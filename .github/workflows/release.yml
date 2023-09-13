@@ -24,7 +24,7 @@ jobs:
           cache: true
           cache-dependency-path: "main/go.sum"
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         id: buildx
       - name: Build artifacts for each target platform
         run: make release
