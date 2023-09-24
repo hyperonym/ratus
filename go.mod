@@ -1,6 +1,6 @@
 module github.com/hyperonym/ratus
 
-go 1.20
+go 1.21
 
 require (
 	github.com/alexflint/go-arg v1.4.3
