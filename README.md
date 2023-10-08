@@ -121,7 +121,7 @@ $ curl -X PATCH "http://127.0.0.1:8000/v1/topics/example/tasks/1"
 ```
 </details>
 
-If a commit is not received before the promised deadline, the state of the task is will be set back to `pending`, which in turn allows consumers to try to execute it again.
+If a commit is not received before the promised deadline, the state of the task will be set back to `pending`, which in turn allows consumers to try to execute it again.
 
 #### Go Client
 
