@@ -11,7 +11,7 @@ require (
 	github.com/hashicorp/go-memdb v1.3.4
 	github.com/prometheus/client_golang v1.19.0
 	go.mongodb.org/mongo-driver v1.14.0
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 )
 
 require (
