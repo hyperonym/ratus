@@ -34,5 +34,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          working-directory: main
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          working-directory: main
