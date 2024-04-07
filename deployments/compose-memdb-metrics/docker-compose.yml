@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   ratus:
-    image: hyperonym/ratus:0.7.2
+    image: hyperonym/ratus:0.8.0
     restart: unless-stopped
     environment:
       ENGINE: "memdb"
