@@ -1059,7 +1059,11 @@
                 },
                 "state": {
                     "description": "If not nil, set the state of the task to the specified value.\nIf nil, the state of the task will be set to \"completed\" by default.",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ratus.TaskState"
+                        }
+                    ]
                 },
                 "topic": {
                     "description": "If not empty, transfer the task to the specified topic.",
@@ -1171,13 +1175,32 @@
                 },
                 "state": {
                     "description": "Current state of the task. At a given moment, the state of a task may be\neither \"pending\", \"active\", \"completed\" or \"archived\".",
-                    "type": "integer"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ratus.TaskState"
+                        }
+                    ]
                 },
                 "topic": {
                     "description": "Topic that the task currently belongs to. Tasks under the same topic\nwill be executed according to the scheduled time.",
                     "type": "string"
                 }
             }
+        },
+        "ratus.TaskState": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3
+            ],
+            "x-enum-varnames": [
+                "TaskStatePending",
+                "TaskStateActive",
+                "TaskStateCompleted",
+                "TaskStateArchived"
+            ]
         },
         "ratus.Tasks": {
             "type": "object",
