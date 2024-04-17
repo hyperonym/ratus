@@ -24,7 +24,7 @@ paths:
       - health
       summary: Check the liveness of the instance
       responses:
-        200:
+        "200":
           description: OK
           content: {}
   /metrics:
@@ -33,7 +33,7 @@ paths:
       - metrics
       summary: Get Prometheus metrics of the instance
       responses:
-        200:
+        "200":
           description: OK
           content:
             text/plain:
@@ -45,10 +45,10 @@ paths:
       - health
       summary: Check the readiness of the instance
       responses:
-        200:
+        "200":
           description: OK
           content: {}
-        503:
+        "503":
           description: Service Unavailable
           content:
             '*/*':
@@ -71,19 +71,19 @@ paths:
         schema:
           type: integer
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Topics'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -94,13 +94,13 @@ paths:
       - topics
       summary: Delete all topics and tasks
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -119,19 +119,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Topic'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -149,13 +149,13 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -184,19 +184,19 @@ paths:
         schema:
           type: integer
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Promises'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -221,25 +221,25 @@ paths:
               $ref: '#/components/schemas/ratus.Promise'
         required: false
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Task'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -258,13 +258,13 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -289,19 +289,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Promise'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -333,25 +333,25 @@ paths:
               $ref: '#/components/schemas/ratus.Promise'
         required: false
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Task'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -383,31 +383,31 @@ paths:
               $ref: '#/components/schemas/ratus.Promise'
         required: false
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Task'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        409:
+        "409":
           description: Conflict
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -432,13 +432,13 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -467,19 +467,19 @@ paths:
         schema:
           type: integer
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Tasks'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -504,25 +504,25 @@ paths:
               $ref: '#/components/schemas/ratus.Tasks'
         required: true
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        201:
+        "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -548,25 +548,25 @@ paths:
               $ref: '#/components/schemas/ratus.Tasks'
         required: true
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        201:
+        "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -585,13 +585,13 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -616,19 +616,19 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Task'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -659,25 +659,25 @@ paths:
               $ref: '#/components/schemas/ratus.Task'
         required: true
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        201:
+        "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -709,25 +709,25 @@ paths:
               $ref: '#/components/schemas/ratus.Task'
         required: true
       responses:
-        201:
+        "201":
           description: Created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Updated'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        409:
+        "409":
           description: Conflict
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -752,13 +752,13 @@ paths:
         schema:
           type: string
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Deleted'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -789,31 +789,31 @@ paths:
               $ref: '#/components/schemas/ratus.Commit'
         required: false
       responses:
-        200:
+        "200":
           description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Task'
-        400:
+        "400":
           description: Bad Request
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        404:
+        "404":
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        409:
+        "409":
           description: Conflict
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ratus.Error'
-        500:
+        "500":
           description: Internal Server Error
           content:
             application/json:
@@ -843,19 +843,21 @@ components:
             corresponding nonce of the target task.
         payload:
           type: object
-          description: If not nil, use this value to replace the payload of the task.
+          description: "If not nil, use this value to replace the payload of the task."
         scheduled:
           type: string
-          description: If not nil, set the scheduled time of the task to the specified
-            value.
+          description: "If not nil, set the scheduled time of the task to the specified\
+            \ value."
         state:
-          type: integer
+          type: object
           description: |-
             If not nil, set the state of the task to the specified value.
             If nil, the state of the task will be set to "completed" by default.
+          allOf:
+          - $ref: '#/components/schemas/ratus.TaskState'
         topic:
           type: string
-          description: If not empty, transfer the task to the specified topic.
+          description: "If not empty, transfer the task to the specified topic."
     ratus.Deleted:
       type: object
       properties:
@@ -975,15 +977,29 @@ components:
             executed until the scheduled time arrives. After the scheduled time,
             excessive tasks will be executed in the order of the scheduled time.
         state:
-          type: integer
+          type: object
           description: |-
             Current state of the task. At a given moment, the state of a task may be
             either "pending", "active", "completed" or "archived".
+          allOf:
+          - $ref: '#/components/schemas/ratus.TaskState'
         topic:
           type: string
           description: |-
             Topic that the task currently belongs to. Tasks under the same topic
             will be executed according to the scheduled time.
+    ratus.TaskState:
+      type: integer
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      x-enum-varnames:
+      - TaskStatePending
+      - TaskStateActive
+      - TaskStateCompleted
+      - TaskStateArchived
     ratus.Tasks:
       type: object
       properties:
@@ -1016,3 +1032,4 @@ components:
         updated:
           type: integer
           description: Number of resources updated by the operation.
+x-original-swagger-version: "2.0"

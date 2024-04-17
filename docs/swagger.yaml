@@ -25,10 +25,11 @@ definitions:
           value.
         type: string
       state:
+        allOf:
+        - $ref: '#/definitions/ratus.TaskState'
         description: |-
           If not nil, set the state of the task to the specified value.
           If nil, the state of the task will be set to "completed" by default.
-        type: integer
       topic:
         description: If not empty, transfer the task to the specified topic.
         type: string
@@ -150,16 +151,29 @@ definitions:
           excessive tasks will be executed in the order of the scheduled time.
         type: string
       state:
+        allOf:
+        - $ref: '#/definitions/ratus.TaskState'
         description: |-
           Current state of the task. At a given moment, the state of a task may be
           either "pending", "active", "completed" or "archived".
-        type: integer
       topic:
         description: |-
           Topic that the task currently belongs to. Tasks under the same topic
           will be executed according to the scheduled time.
         type: string
     type: object
+  ratus.TaskState:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - TaskStatePending
+    - TaskStateActive
+    - TaskStateCompleted
+    - TaskStateArchived
   ratus.Tasks:
     properties:
       data:

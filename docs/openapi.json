@@ -1354,8 +1354,13 @@
                         "description": "If not nil, set the scheduled time of the task to the specified value."
                     },
                     "state": {
-                        "type": "integer",
-                        "description": "If not nil, set the state of the task to the specified value.\nIf nil, the state of the task will be set to \"completed\" by default."
+                        "type": "object",
+                        "description": "If not nil, set the state of the task to the specified value.\nIf nil, the state of the task will be set to \"completed\" by default.",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ratus.TaskState"
+                            }
+                        ]
                     },
                     "topic": {
                         "type": "string",
@@ -1467,14 +1472,34 @@
                         "description": "The time the task is scheduled to be executed. Tasks will not be\nexecuted until the scheduled time arrives. After the scheduled time,\nexcessive tasks will be executed in the order of the scheduled time."
                     },
                     "state": {
-                        "type": "integer",
-                        "description": "Current state of the task. At a given moment, the state of a task may be\neither \"pending\", \"active\", \"completed\" or \"archived\"."
+                        "type": "object",
+                        "description": "Current state of the task. At a given moment, the state of a task may be\neither \"pending\", \"active\", \"completed\" or \"archived\".",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/ratus.TaskState"
+                            }
+                        ]
                     },
                     "topic": {
                         "type": "string",
                         "description": "Topic that the task currently belongs to. Tasks under the same topic\nwill be executed according to the scheduled time."
                     }
                 }
+            },
+            "ratus.TaskState": {
+                "type": "integer",
+                "enum": [
+                    0,
+                    1,
+                    2,
+                    3
+                ],
+                "x-enum-varnames": [
+                    "TaskStatePending",
+                    "TaskStateActive",
+                    "TaskStateCompleted",
+                    "TaskStateArchived"
+                ]
             },
             "ratus.Tasks": {
                 "type": "object",
@@ -1525,5 +1550,6 @@
                 }
             }
         }
-    }
+    },
+    "x-original-swagger-version": "2.0"
 }
