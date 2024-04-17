@@ -1,6 +1,4 @@
 # Binaries for programs and plugins
-bin/
-release/
 *.exe
 *.exe~
 *.dll
@@ -13,7 +11,10 @@ release/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Editor stuffs
+# Go workspace file
+go.work
+
+# Visual Studio Code workspace settings
 .vscode/
 
 # macOS
@@ -21,3 +22,7 @@ release/
 
 # Temporary files
 temp/
+
+# Build artifacts
+bin/
+release/
