@@ -1,5 +1,4 @@
 NAME := ratus
-CMD := ratus
 VERSION := 0.8.0
 
 DOCKER_HUB_OWNER ?= hyperonym
@@ -11,24 +10,9 @@ GITHUB_PACKAGES_IMAGE := ghcr.io/$(GITHUB_PACKAGES_OWNER)/$(NAME):$(VERSION)
 TARGET_BINARY_PLATFORMS := aix/ppc64,android/arm64,darwin/amd64,darwin/arm64,freebsd/386,freebsd/amd64,freebsd/arm64,linux/386,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/riscv64,linux/s390x,windows/386,windows/amd64,windows/arm64
 TARGET_CONTAINER_PLATFORMS := linux/386,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/s390x
 
-LDFLAGS := -ldflags "-s -w -X main.version=v$(VERSION)"
-
-BUILD_INPUT := ./cmd/$(CMD)
-ifeq ($(OS),Windows_NT)
-	BUILD_OUTPUT := bin/$(CMD).exe
-else
-	BUILD_OUTPUT := bin/$(CMD)
-endif
-
-comma := ,
-
 .PHONY: build
 build:
-	@CGO_ENABLED=0 go build -buildvcs=false -trimpath $(LDFLAGS) -o $(BUILD_OUTPUT) $(BUILD_INPUT)
-
-.PHONY: build-%
-build-%:
-	@CGO_ENABLED=0 GOOS=$(firstword $(subst -, ,$*)) GOARCH=$(lastword $(subst -, ,$*)) go build -a -trimpath $(LDFLAGS) -o bin/$(subst -,/,$*)/$(CMD)$(if $(findstring windows,$*),.exe,) $(BUILD_INPUT)
+	@CGO_ENABLED=0 go build -a -trimpath -ldflags "-s -w -X main.version=$(VERSION)" -o bin/ ./cmd/*
 
 .PHONY: changelog
 changelog:
@@ -42,17 +26,21 @@ clean:
 	@rm -f coverage.out
 	@rm -rf bin/ release/
 
-.PHONY: docker-%
-docker-%: build-%
-	@docker build --platform $(subst -,/,$*) --tag $(DOCKER_HUB_IMAGE)-$* .
+.PHONY: docker
+docker:
+	@docker build --build-arg "VERSION=$(VERSION)" --tag $(DOCKER_HUB_IMAGE) .
+
+.PHONY: docker-export
+docker-export:
+	@docker buildx build --build-arg "VERSION=$(VERSION)" --platform $(TARGET_BINARY_PLATFORMS) --target binary --output bin/ .
 
 .PHONY: docker-hub
-docker-hub: $(foreach t,$(subst $(comma), ,$(TARGET_CONTAINER_PLATFORMS)),build-$(subst /,-,$(t)))
-	@docker buildx build --push --platform $(TARGET_CONTAINER_PLATFORMS) --tag $(DOCKER_HUB_IMAGE) .
+docker-hub:
+	@docker buildx build --build-arg "VERSION=$(VERSION)" --platform $(TARGET_CONTAINER_PLATFORMS) --push --tag $(DOCKER_HUB_IMAGE) .
 
 .PHONY: github-packages
-github-packages: $(foreach t,$(subst $(comma), ,$(TARGET_CONTAINER_PLATFORMS)),build-$(subst /,-,$(t)))
-	@docker buildx build --push --platform $(TARGET_CONTAINER_PLATFORMS) --tag $(GITHUB_PACKAGES_IMAGE) .
+github-packages:
+	@docker buildx build --build-arg "VERSION=$(VERSION)" --platform $(TARGET_CONTAINER_PLATFORMS) --push --tag $(GITHUB_PACKAGES_IMAGE) .
 
 .PHONY: github-release
 github-release: changelog
@@ -61,18 +49,15 @@ github-release: changelog
 .PHONY: install
 install: build
 	@install -d /usr/local/bin
-	@install -m755 $(BUILD_OUTPUT) /usr/local/bin/
+	@install -m755 bin/* /usr/local/bin/
 
 .PHONY: release
-release: $(foreach t,$(subst $(comma), ,$(TARGET_BINARY_PLATFORMS)),release-$(subst /,-,$(t)))
-
-.PHONY: release-%
-release-%: changelog build-%
-	@zip -9 -j release/$(CMD)-$(VERSION)-$*.zip bin/$(subst -,/,$*)/*
+release: changelog docker-export
+	@$(foreach platform,$(shell find bin -maxdepth 1 -mindepth 1 -type d | cut -c 5-),zip -9 -j release/$(NAME)-$(VERSION)-$(subst _,-,$(platform)).zip bin/$(platform)/*;)
 
 .PHONY: run
 run:
-	@go run $(BUILD_INPUT)
+	@go run ./cmd/*
 
 .PHONY: test
 test:

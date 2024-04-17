@@ -1,10 +1,39 @@
-FROM scratch
+# syntax=docker/dockerfile:1
 
-# Define arguments for building multi-arch images
-ARG TARGETPLATFORM
+# Set default Go version
+ARG GO_VERSION=1.22.2
 
-# Copy artifacts to the container
-COPY bin/${TARGETPLATFORM}/* /
+# Use native architecture of the build node for cross-compilation
+FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
+
+# Set working directory
+WORKDIR /src
+
+# Install module dependencies
+COPY go.mod .
+COPY go.su[m] .
+RUN go mod download -x
+
+# Copy source code
+COPY . .
+
+# Build binaries for the target platform
+ARG TARGETOS
+ARG TARGETARCH
+ARG VERSION
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -a -trimpath -ldflags "-s -w -X main.version=${VERSION}" -o bin/ ./cmd/*
+
+# Copy binaries from the build stage for exporting
+FROM --platform=$TARGETPLATFORM scratch AS binary
+COPY --from=build /src/bin/* /
+
+# Build base image with binaries and trusted certificates
+FROM --platform=$TARGETPLATFORM scratch AS base
+COPY --from=binary /* /
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Build release image with configurations
+FROM base AS release
 
 # Expose ports
 EXPOSE 80
