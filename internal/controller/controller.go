@@ -17,8 +17,8 @@ import (
 // @contact.name  GitHub
 // @contact.url   https://github.com/hyperonym/ratus
 
-// @license.name  Mozilla Public License Version 2.0
-// @license.url   https://www.mozilla.org/en-US/MPL/2.0/
+// @license.name  Apache License 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0
 
 // @basePath  /v1
 
