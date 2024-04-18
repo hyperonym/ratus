@@ -1,11 +1,11 @@
 NAME := ratus
 VERSION := 0.8.1
 
-DOCKER_HUB_OWNER ?= hyperonym
-DOCKER_HUB_IMAGE := $(DOCKER_HUB_OWNER)/$(NAME):$(VERSION)
+DOCKER_HUB_NAMESPACE ?= hyperonym
+DOCKER_HUB_IMAGE := $(DOCKER_HUB_NAMESPACE)/$(NAME):$(VERSION)
 
-GITHUB_PACKAGES_OWNER ?= hyperonym
-GITHUB_PACKAGES_IMAGE := ghcr.io/$(GITHUB_PACKAGES_OWNER)/$(NAME):$(VERSION)
+GITHUB_PACKAGES_NAMESPACE ?= hyperonym
+GITHUB_PACKAGES_IMAGE := ghcr.io/$(GITHUB_PACKAGES_NAMESPACE)/$(NAME):$(VERSION)
 
 TARGET_BINARY_PLATFORMS := aix/ppc64,android/arm64,darwin/amd64,darwin/arm64,freebsd/386,freebsd/amd64,freebsd/arm64,linux/386,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/riscv64,linux/s390x,windows/386,windows/amd64,windows/arm64
 TARGET_CONTAINER_PLATFORMS := linux/386,linux/amd64,linux/arm64,linux/mips64le,linux/ppc64le,linux/s390x
