@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Set default Go version
-ARG GO_VERSION=1.22.2
+ARG GO_VERSION=1
 
 # Use native architecture of the build node for cross-compilation
 FROM --platform=$BUILDPLATFORM golang:${GO_VERSION} AS build
