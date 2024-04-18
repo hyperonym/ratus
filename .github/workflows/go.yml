@@ -8,11 +8,8 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.go-version }}
+    name: test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ["1.22"]
     defaults:
       run:
         working-directory: main
@@ -24,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version-file: "main/go.mod"
           check-latest: true
           cache: true
           cache-dependency-path: "main/go.sum"
