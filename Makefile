@@ -30,8 +30,8 @@ clean:
 docker:
 	@docker build --build-arg "VERSION=$(VERSION)" --tag $(DOCKER_HUB_IMAGE) .
 
-.PHONY: docker-export
-docker-export:
+.PHONY: docker-build
+docker-build:
 	@docker buildx build --build-arg "VERSION=$(VERSION)" --platform $(TARGET_BINARY_PLATFORMS) --target binary --output bin/ .
 
 .PHONY: docker-hub
@@ -52,7 +52,7 @@ install: build
 	@install -m755 bin/* /usr/local/bin/
 
 .PHONY: release
-release: changelog docker-export
+release: changelog docker-build
 	@$(foreach platform,$(shell find bin -maxdepth 1 -mindepth 1 -type d | cut -c 5-),zip -9 -j release/$(NAME)-$(VERSION)-$(subst _,-,$(platform)).zip bin/$(platform)/*;)
 
 .PHONY: run
