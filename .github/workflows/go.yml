@@ -10,21 +10,16 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: main
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: main
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: "main/go.mod"
+          go-version-file: "go.mod"
           check-latest: true
           cache: true
-          cache-dependency-path: "main/go.sum"
+          cache-dependency-path: "go.sum"
       - name: Test packages
         run: make test-short
       - name: Build artifacts
