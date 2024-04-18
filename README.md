@@ -313,7 +313,7 @@ Contributions are greatly appreciated, please refer to [CONTRIBUTING.md](https:/
 
 ## License
 
-Ratus is available under the [Mozilla Public License Version 2.0](https://github.com/hyperonym/ratus/blob/master/LICENSE).
+Ratus is available under the [Apache License 2.0](https://github.com/hyperonym/ratus/blob/master/LICENSE).
 
 ---
 
