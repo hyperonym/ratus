@@ -3,7 +3,7 @@ module github.com/hyperonym/ratus
 go 1.22.2
 
 require (
-	github.com/alexflint/go-arg v1.4.3
+	github.com/alexflint/go-arg v1.5.0
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/pprof v1.5.0
@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	github.com/alexflint/go-scalar v1.1.0 // indirect
+	github.com/alexflint/go-scalar v1.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
