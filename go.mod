@@ -3,7 +3,7 @@ module github.com/hyperonym/ratus
 go 1.22.2
 
 require (
-	github.com/alexflint/go-arg v1.5.0
+	github.com/alexflint/go-arg v1.5.1
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/pprof v1.5.0
