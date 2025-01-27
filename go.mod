@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/alexflint/go-arg v1.5.1
 	github.com/gin-contrib/cors v1.7.3
-	github.com/gin-contrib/gzip v1.2.0
+	github.com/gin-contrib/gzip v1.2.2
 	github.com/gin-contrib/pprof v1.5.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/hashicorp/go-memdb v1.3.4
