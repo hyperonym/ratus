@@ -1,6 +1,7 @@
 module github.com/hyperonym/ratus
 
 go 1.22.2
+toolchain go1.23.7
 
 require (
 	github.com/alexflint/go-arg v1.5.1
@@ -11,7 +12,7 @@ require (
 	github.com/hashicorp/go-memdb v1.3.5
 	github.com/prometheus/client_golang v1.21.1
 	go.mongodb.org/mongo-driver v1.17.3
-	golang.org/x/sync v0.11.0
+	golang.org/x/sync v0.12.0
 )
 
 require (
