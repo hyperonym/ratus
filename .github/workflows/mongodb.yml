@@ -15,7 +15,7 @@ jobs:
         mongodb-version: ["4.4", "5.0", "6.0", "7.0"]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
